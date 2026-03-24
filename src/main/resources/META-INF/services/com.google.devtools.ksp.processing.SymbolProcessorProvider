@@ -1,0 +1,3 @@
+#com.dcbd.hytale.ksp.codec.processor.BuilderCodecProcessorProvider
+com.dcbd.hytale.ksp.hytale_codec.processor.HytaleBuilderCodecProcessorProvider
+com.dcbd.hytale.ksp.registry.processor.RegistrationProcessorProvider

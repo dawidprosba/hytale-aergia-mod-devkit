@@ -1,0 +1,4 @@
+org.gradle.jvmargs=-Xmx2g -Xms1g
+
+# Path to your local Hytale server JAR.
+hytale.serverJar=/path/to/HytaleServer.jar
