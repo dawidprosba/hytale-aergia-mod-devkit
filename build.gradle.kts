@@ -6,7 +6,8 @@ plugins {
 }
 
 group = "io.github.dawidprosba"
-version = "0.0.1"
+val baseVersion = "0.0.1"
+version = if (providers.gradleProperty("local").isPresent) "$baseVersion-SNAPSHOT" else baseVersion
 
 repositories {
     google()
