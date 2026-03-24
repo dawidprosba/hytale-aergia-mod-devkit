@@ -41,7 +41,13 @@ Apply the KSP plugin and add the devkit as a dependency:
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("com.google.devtools.ksp") version "2.3.6"
+    // KSP version must match your Kotlin version: <kotlin-version>-<ksp-version>
+    // See https://github.com/google/ksp/releases for the full list
+    id("com.google.devtools.ksp") version "2.1.20-1.0.32"
+}
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
