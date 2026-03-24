@@ -45,8 +45,8 @@ plugins {
 }
 
 dependencies {
-    implementation("com.dcbd.hytale:hytale-aergia-mod-devkit:1.0.0")
-    ksp("com.dcbd.hytale:hytale-aergia-mod-devkit:1.0.0")
+    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:1.0.0")
+    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:1.0.0")
 }
 
 ksp {

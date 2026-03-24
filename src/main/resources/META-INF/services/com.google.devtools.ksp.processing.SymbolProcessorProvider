@@ -1,2 +1,2 @@
-com.dcbd.aergiadevkit.ksp.hytale_codec.processor.HytaleBuilderCodecProcessorProvider
-com.dcbd.aergiadevkit.ksp.registry.processor.RegistrationProcessorProvider
+io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.processor.HytaleBuilderCodecProcessorProvider
+io.github.dawidprosba.aergiadevkit.ksp.registry.processor.RegistrationProcessorProvider
