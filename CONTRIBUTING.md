@@ -22,7 +22,7 @@ Clone the repository, set `hytale.serverJar` in `gradle.properties`, then run:
 This installs the artifact to your local Maven cache (`~/.m2`):
 
 ```
-~/.m2/repository/io/github/dawidprosba/hytale-aergia-mod-devkit/1.0.0/
+~/.m2/repository/io/github/dawidprosba/hytale-aergia-mod-devkit/0.0.1/
 ```
 
 ## Using a local build in your mod project
@@ -36,8 +36,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:1.0.0")
-    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:1.0.0")
+    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.1")
+    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.1")
 }
 ```
 

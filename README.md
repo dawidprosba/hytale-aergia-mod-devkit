@@ -2,7 +2,7 @@
 
 # 🏛️ Hytale Aergia Mod Devkit
 
-*Let Aergia, goddess of laziness, handle the boring parts.*
+*Let Aergia, goddess of laziness.*
 
 A KSP annotation processor library for Hytale mod development.
 Annotate your classes — Aergia generates the boilerplate at compile time.
@@ -51,8 +51,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:1.0.0")
-    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:1.0.0")
+    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.1")
+    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.1")
 }
 
 ksp {

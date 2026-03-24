@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.dawidprosba"
-version = "1.0.0"
+version = "0.0.1"
 
 repositories {
     google()
