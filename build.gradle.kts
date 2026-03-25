@@ -1,8 +1,7 @@
 plugins {
     `maven-publish`
-    signing
     id("org.jetbrains.kotlin.jvm") version "2.3.20"
-    id("com.gradleup.nmcp") version "1.4.4"
+    id("com.vanniktech.maven.publish") version "0.36.0"
 }
 
 group = "io.github.dawidprosba"
@@ -30,51 +29,45 @@ java {
     withSourcesJar()
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "hytale-aergia-mod-devkit"
-            from(components["java"])
-            pom {
-                name.set("Hytale Aergia Mod Devkit")
-                description.set("KSP annotation processors for Hytale mod development: codec generation and auto-registration of components, interactions, and systems.")
-                url.set("https://github.com/dawidprosba/hytale-aergia-mod-devkit")
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("dawidprosba")
-                        name.set("Dawid")
-                        url.set("https://github.com/dawidprosba")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:git://github.com/dawidprosba/hytale-aergia-mod-devkit.git")
-                    developerConnection.set("scm:git:ssh://github.com/dawidprosba/hytale-aergia-mod-devkit.git")
-                    url.set("https://github.com/dawidprosba/hytale-aergia-mod-devkit")
-                }
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    coordinates(group.toString(), "hytale-aergia-mod-devkit", version.toString())
+    pom {
+        name = "Hytale Aergia Mod Devkit"
+        description =
+            "KSP annotation processors for Hytale mod development: codec generation and auto-registration of components, interactions, and systems."
+        url = "https://github.com/dawidprosba/hytale-aergia-mod-devkit"
+        licenses {
+            license {
+                name = "MIT License"
+                url = "https://opensource.org/licenses/MIT"
             }
+        }
+        developers {
+            developer {
+                id = "dawidprosba"
+                name = "Dawid"
+                url = "https://github.com/dawidprosba"
+            }
+        }
+        scm {
+            url = "https://github.com/dawidprosba/hytale-aergia-mod-devkit"
+            connection =
+                "scm:git:git://github.com/dawidprosba/hytale-aergia-mod-devkit.git"
+            url =
+                "scm:git:ssh://git@github.com/dawidprosba/hytale-aergia-mod-devkit.git"
         }
     }
 }
 
-signing {
-    val signingKey = providers.gradleProperty("signing.key")
-    val signingPassword = providers.gradleProperty("signing.password")
-    if (signingKey.isPresent && signingKey.get().isNotBlank() && signingPassword.isPresent && signingPassword.get().isNotBlank()) {
-        useInMemoryPgpKeys(signingKey.get(), signingPassword.get())
-        sign(publishing.publications["maven"])
-    }
-}
-
-nmcp {
-    publishAllPublicationsToCentralPortal {
-        username.set(providers.gradleProperty("centralPortal.username").getOrElse(""))
-        password.set(providers.gradleProperty("centralPortal.password").getOrElse(""))
-        publishingType.set("AUTOMATIC")
-    }
-}
+//publishing {
+//    publications {
+//        create<MavenPublication>("maven") {
+//            artifactId = "hytale-aergia-mod-devkit"
+//            from(components["java"])
+//
+//        }
+//    }
+//}
