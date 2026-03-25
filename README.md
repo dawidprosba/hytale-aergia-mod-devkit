@@ -36,6 +36,8 @@ You focus on the creative work.
 
 ## 🚀 Installation
 
+> **Kotlin projects only.** This library uses KSP (Kotlin Symbol Processing) to generate code at compile time. It requires a Kotlin project — pure Java projects are not supported.
+
 Apply the KSP plugin and add the devkit as a dependency:
 
 ```kotlin
