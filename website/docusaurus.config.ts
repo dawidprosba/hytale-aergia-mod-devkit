@@ -125,6 +125,24 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: ['java'],
+      magicComments: [
+        {
+          className: 'theme-code-block-highlighted-line',
+          line: 'highlight-next-line',
+          block: {start: 'highlight-start', end: 'highlight-end'},
+        },
+        {
+          className: 'code-block-add-line',
+          line: 'add-next-line',
+          block: {start: 'add-start', end: 'add-end'},
+        },
+        {
+          className: 'code-block-remove-line',
+          line: 'remove-next-line',
+          block: {start: 'remove-start', end: 'remove-end'},
+        },
+      ],
     },
   } satisfies Preset.ThemeConfig,
 };

@@ -1,117 +1,110 @@
 ---
 title: Converting a Hytale Plugin from Java to Kotlin
-sidebar_label: Java to Kotlin Migration
-sidebar_position: 3
+sidebar_label: Converting your Java Plugin to Kotlin
+sidebar_position: 4
 ---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
 
 # Converting a Hytale Plugin from Java to Kotlin
 
-This guide walks through converting the [Hytale Example Plugin](https://github.com/Kaupenjoe/Hytale-Example-Plugin) boilerplate from Java to Kotlin. If you are starting from that boilerplate, these are the exact steps needed to get a working Kotlin project.
+This guide walks through converting
+the [Hytale Example Plugin](https://github.com/Kaupenjoe/Hytale-Example-Plugin) boilerplate from
+Java to Kotlin. If you are starting from that boilerplate, these are the exact steps needed to get a
+working Kotlin project.
 
-The build system (`build.gradle.kts`) is already written in Kotlin DSL — only the source files and a few build configuration lines need changing.
+The build system (`build.gradle.kts`) is already written in Kotlin DSL — only the source files and a
+few build configuration lines need changing.
 
 ---
 
 ## Prerequisites
 
-- The [Hytale Example Plugin](https://github.com/Kaupenjoe/Hytale-Example-Plugin) boilerplate cloned and building successfully
+- The [Hytale Example Plugin](https://github.com/Kaupenjoe/Hytale-Example-Plugin) boilerplate cloned
+  and building successfully or similarly configured project.
 - IntelliJ IDEA (recommended — it has a built-in Java-to-Kotlin converter)
 - Basic familiarity with Kotlin syntax
 
 ---
 
-## Overview of Changes
+## 1. Add Kotlin to the Plugins
 
-| What | Before | After |
-|---|---|---|
-| Build plugin | Java only | + `kotlin("jvm")` |
-| Toolchain config | `java { toolchain { ... } }` | `kotlin { jvmToolchain(...) }` |
-| Source directory | `src/main/java/...` | `src/main/kotlin/...` |
-| Source files | `*.java` | `*.kt` |
+Lets start by adding Kotlin support into the project.
+(When you add Kotlin support, you can have both Java and Kotlin source files in the same project, so
+you can convert them one at a time and mod will work.)
 
-The `manifest.json`, `gradle.properties`, `settings.gradle.kts`, and all resource files stay exactly the same.
-
----
-
-## Step 1: Add the Kotlin Plugin to `build.gradle.kts`
-
-Open `build.gradle.kts` and add `kotlin("jvm")` to the `plugins` block. Place it before the `hytale-mod` plugin.
-
-**Before:**
-```kotlin
+```kotlin title="build.gradle.kts"
 plugins {
     `maven-publish`
+    // In your IntelliJ do no not forget to click sync gradle project.
+    // add-next-line
+    kotlin("jvm") version "2.3.20" // Latest version as of time of writing this. 
     id("hytale-mod") version "0.+"
 }
-```
 
-**After:**
-```kotlin
-plugins {
-    `maven-publish`
-    kotlin("jvm") version "2.3.20"
-    id("hytale-mod") version "0.+"
+group = "com.example"
+version = "0.1.0"
+val javaVersion = 25
+
+dependencies {
+    compileOnly(libs.jetbrains.annotations)
+    compileOnly(libs.jspecify)
 }
-```
 
-> The Kotlin JVM plugin automatically adds `kotlin-stdlib` to your compile classpath — you do not need to declare it manually in `dependencies`.
+hytale {
+    // uncomment if you want to add the Assets.zip file to your external libraries;
+    // ⚠️ CAUTION, this file is very big and might make your IDE unresponsive for some time!
+    //
+    // addAssetsDependency = true
 
----
-
-## Step 2: Replace the Java Toolchain Block
-
-The `kotlin { jvmToolchain(...) }` extension configures both the Kotlin and Java compilers in one call, so the separate `java { toolchain { ... } }` block is no longer needed.
-
-**Before:**
-```kotlin
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(javaVersion)
-    }
-
-    withSourcesJar()
+    // uncomment if you want to develop your mod against the pre-release version of the game.
+    //
+    // updateChannel = "pre-release"
 }
-```
 
-**After:**
-```kotlin
+// add-next-line
 kotlin {
+    // add-next-line
     jvmToolchain(javaVersion)
+// add-next-line
 }
 
 java {
+    // remove-next-line
+    toolchain {
+        // remove-next-line
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+        // remove-next-line    
+    }
     withSourcesJar()
 }
+// --- Rest of your build.gradle.kts ---
 ```
 
-The `java { withSourcesJar() }` block is kept so Gradle still produces a `-sources.jar` for publishing.
+## 2. Convert ExamplePlugin (Your plugin class into a Kotlin class)
 
----
+:::info
+The Kotlin files are created under `src/main/kotlin/` where java files are `src/main/java/`.
+So if your plugin is in `src/main/java/com/example/plugin/ExamplePlugin.java`, create a new file in
+`src/main/kotlin/com/example/plugin/ExamplePlugin.kt`.
+:::
 
-## Step 3: Create the Kotlin Source Directory
+:::tip
+In IntelliJ IDEA, use **Code > Convert Java File to Kotlin File** to automatically convert your
+existing Java file, or simply paste Java code into a `.kt` file and IntelliJ will offer to convert
+it for you. Afterwards, delete the original `.java` file.
+:::
 
-Create the directory `src/main/kotlin/` mirroring the same package path as your Java sources. In the boilerplate, that is `com/example/exampleplugin/`.
+<Tabs>
+<TabItem value="java" label="Before (Java)" default>
+```java title="src/main/java/com/example/plugin/ExamplePlugin.java"
 
-```
-src/
-  main/
-    java/
-      com/example/exampleplugin/   <-- old location (to be deleted later)
-    kotlin/
-      com/example/exampleplugin/   <-- new location
-    resources/
-```
-
-Gradle's Kotlin JVM plugin automatically picks up sources from `src/main/kotlin`. You do not need to register it manually.
-
----
-
-## Step 4: Convert `ExamplePlugin.java`
-
-The boilerplate's main plugin class lives at `src/main/java/com/example/exampleplugin/ExamplePlugin.java`.
-
-**Original Java:**
-```java
+package com.example.exampleplugin;
+import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+    
 public class ExamplePlugin extends JavaPlugin {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
@@ -125,10 +118,17 @@ public class ExamplePlugin extends JavaPlugin {
         this.getCommandRegistry().registerCommand(new ExampleCommand(this.getName(), this.getManifest().getVersion().toString()));
     }
 }
-```
 
-**Converted Kotlin (`src/main/kotlin/com/example/exampleplugin/ExamplePlugin.kt`):**
-```kotlin
+```
+</TabItem>
+<TabItem value="kotlin" label="After (Kotlin)">
+```kotlin title="src/main/kotlin/com/example/plugin/ExamplePlugin.kt"
+package com.example.exampleplugin
+
+import com.hypixel.hytale.logger.HytaleLogger
+import com.hypixel.hytale.server.core.plugin.JavaPlugin
+import com.hypixel.hytale.server.core.plugin.JavaPluginInit
+
 class ExamplePlugin(init: JavaPluginInit) : JavaPlugin(init) {
 
     companion object {
@@ -136,7 +136,7 @@ class ExamplePlugin(init: JavaPluginInit) : JavaPlugin(init) {
     }
 
     init {
-        LOGGER.atInfo().log("Hello from %s version %s", name, manifest.version.toString())
+        LOGGER.atInfo().log("Hello from %s version %s" using KOTLIN!, name, manifest.version.toString())
     }
 
     override fun setup() {
@@ -145,138 +145,17 @@ class ExamplePlugin(init: JavaPluginInit) : JavaPlugin(init) {
 }
 ```
 
-**Key differences explained:**
+</TabItem>
+</Tabs>
 
-| Java | Kotlin | Why |
-|---|---|---|
-| `class X extends Y` | `class X(...) : Y(...)` | Constructor parameters and superclass call are combined |
-| `static final` field | `companion object { val ... }` | Kotlin has no `static`; companion objects hold class-level state |
-| `public ExamplePlugin(...) { super(...); ... }` | `init { ... }` block | Primary constructor calls super automatically; `init` runs after |
-| `this.getName()` | `name` | Kotlin maps Java `getX()` getters to properties automatically |
-| `this.getManifest()` | `manifest` | Same property mapping |
-| `this.getCommandRegistry()` | `commandRegistry` | Same property mapping |
+## Q&A
 
-> **Note on `HytaleLogger.forEnclosingClass()`:** This method uses the call stack to detect the calling class. Calling it inside a `companion object` initializer is safe — the enclosing class resolves to `ExamplePlugin`. If you ever see the wrong class name in logs, replace it with `HytaleLogger.forClass(ExamplePlugin::class.java)` as an explicit fallback.
+#### * Can I convert only some of my Java files to Kotlin?
+Yes, you can have both Java and Kotlin files in the same project.
 
----
+#### * Can I have two version of the same file, one for example `Test.java` and one for `Test.kt`?
+No, this will likely result in a compilation error because of the name clash.
 
-## Step 5: Convert `ExampleCommand.java`
-
-The boilerplate's command class lives at `src/main/java/com/example/exampleplugin/ExampleCommand.java`.
-
-**Original Java:**
-```java
-public class ExampleCommand extends CommandBase {
-    private final String pluginName;
-    private final String pluginVersion;
-
-    public ExampleCommand(String pluginName, String pluginVersion) {
-        super("test", "Prints a test message from the " + pluginName + " plugin.");
-        this.setPermissionGroup(GameMode.Adventure);
-        this.pluginName = pluginName;
-        this.pluginVersion = pluginVersion;
-    }
-
-    @Override
-    protected void executeSync(@Nonnull CommandContext ctx) {
-        ctx.sendMessage(Message.raw("Hello from the " + pluginName + " v" + pluginVersion + " plugin!"));
-    }
-}
-```
-
-**Converted Kotlin (`src/main/kotlin/com/example/exampleplugin/ExampleCommand.kt`):**
-```kotlin
-class ExampleCommand(
-    private val pluginName: String,
-    private val pluginVersion: String
-) : CommandBase("test", "Prints a test message from the $pluginName plugin.") {
-
-    init {
-        setPermissionGroup(GameMode.Adventure) // Allows the command to be used by anyone, not just OP
-    }
-
-    override fun executeSync(ctx: CommandContext) {
-        ctx.sendMessage(Message.raw("Hello from the $pluginName v$pluginVersion plugin!"))
-    }
-}
-```
-
-**Key differences explained:**
-
-| Java | Kotlin | Why |
-|---|---|---|
-| Two separate fields + constructor params | `private val` in primary constructor | Kotlin combines field declaration and constructor parameter into one |
-| `super("test", ...)` in constructor body | `: CommandBase("test", ...)` in class header | Superclass constructor call moves to the class declaration |
-| `"Hello from " + pluginName + " v" + pluginVersion` | `"Hello from $pluginName v$pluginVersion"` | Kotlin string templates replace concatenation |
-| `this.setPermissionGroup(GameMode.Adventure)` | `setPermissionGroup(GameMode.Adventure)` | Only works as a property if there is a matching getter; call the method directly otherwise |
-| `@Nonnull CommandContext ctx` | `ctx: CommandContext` | Kotlin types are non-null by default; the annotation is redundant |
-
----
-
-## Step 6: Delete the Old Java Files
-
-Once the Kotlin files compile (see Step 7), delete the original Java source files:
-
-```
-src/main/java/com/example/exampleplugin/ExamplePlugin.java
-src/main/java/com/example/exampleplugin/ExampleCommand.java
-```
-
-If `src/main/java` is now empty, you can delete the whole directory. Gradle will not complain about a missing `src/main/java` when the Kotlin plugin is present.
-
----
-
-## Step 7: Verify the Build
-
-Run the Gradle build to confirm everything compiles:
-
-```bash
-./gradlew build
-```
-
-Or, to run the development server directly:
-
-```bash
-./gradlew runServer
-```
-
-If the server starts and you see the `Hello from ExamplePlugin version ...` log line, the conversion was successful.
-
----
-
-## Troubleshooting
-
-**`Unresolved reference` errors on Java getters**
-Kotlin automatically maps `getX()` / `setX()` to properties, but this only works when the method follows standard JavaBean naming. If a method does not follow that convention, call it directly: `this.getSomeWeirdName()`.
-
-**`forEnclosingClass()` logs the wrong class name**
-Replace the call with an explicit reference:
-```kotlin
-private val LOGGER = HytaleLogger.forClass(ExamplePlugin::class.java)
-```
-
-**`plugin_main_entrypoint` in `gradle.properties`**
-This value does not change. Kotlin classes compile to the same JVM class names as Java classes, so `com.example.exampleplugin.ExamplePlugin` remains valid.
-
-**Mixing Java and Kotlin source files**
-If you need to keep some Java files during a gradual migration, both `src/main/java` and `src/main/kotlin` can coexist. The Kotlin compiler handles cross-language compilation within the same module automatically.
-
----
-
-## Final File Structure
-
-```
-src/
-  main/
-    kotlin/
-      com/example/exampleplugin/
-        ExamplePlugin.kt
-        ExampleCommand.kt
-    resources/
-      manifest.json
-      Common/...
-      Server/...
-build.gradle.kts
-gradle.properties
-settings.gradle.kts
-```
+:::info
+Java Examples used in this guide were taken from the [Hytale Example Plugin](https://github.com/Kaupenjoe/Hytale-Example-Plugin).
+:::

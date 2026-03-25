@@ -27,3 +27,25 @@
   --ifm-color-primary-lightest: #ede8ff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+.code-block-add-line {
+  background-color: rgba(0, 200, 80, 0.15);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+[data-theme='dark'] .code-block-add-line {
+  background-color: rgba(0, 200, 80, 0.2);
+}
+
+.code-block-remove-line {
+  background-color: rgba(220, 50, 50, 0.15);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+[data-theme='dark'] .code-block-remove-line {
+  background-color: rgba(220, 50, 50, 0.2);
+}
