@@ -4,7 +4,6 @@ import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterCompo
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSystem
 import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -16,23 +15,18 @@ import com.google.devtools.ksp.validate
 class RegistrationProcessor(
     environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
-    private val annotationNames = listOf(
-        RegisterInteraction::class.qualifiedName!!,
-        RegisterComponent::class.qualifiedName!!,
-        RegisterSystem::class.qualifiedName!!
+    private val annotationToRegistryType = mapOf(
+        RegisterInteraction::class.qualifiedName!! to RegistryType.INTERACTION,
+        RegisterComponent::class.qualifiedName!! to RegistryType.COMPONENT,
+        RegisterSystem::class.qualifiedName!! to RegistryType.SYSTEM
     )
+    private val annotationNames = annotationToRegistryType.keys.toList()
 
     private val outputPackage = environment.options["registriesOutputPackage"]
         ?: throw IllegalArgumentException("Missing required option: registriesOutputPackage add it under build.gradle.kts, ksp {..here..}")
     private val pluginClass = environment.options["pluginClass"]
         ?: throw IllegalArgumentException("Missing required option: pluginClass — add arg(\"pluginClass\", \"com.example.YourModClass\") to ksp { } in build.gradle.kts")
     private val codeGenerator: CodeGenerator = environment.codeGenerator
-
-    private val outputObjects : MutableMap<String,String> = mutableMapOf(
-        RegisterInteraction::class.qualifiedName!! to "InteractionRegistryGenerated",
-        RegisterComponent::class.qualifiedName!! to "ComponentRegistryGenerated",
-        RegisterSystem::class.qualifiedName!! to "SystemRegistryGenerated"
-    )
 
     private val collectedEntriesByAnnotation: MutableMap<String, MutableMap<String, RegistryEntryMetadata>> =
         annotationNames.associateWith { mutableMapOf<String, RegistryEntryMetadata>() }.toMutableMap()
@@ -70,29 +64,26 @@ class RegistrationProcessor(
     }
 
     override fun finish() {
-        annotationNames.forEach { annotationQualifiedName ->
+        annotationToRegistryType.forEach { (annotationQualifiedName, registryType) ->
             val entries = collectedEntriesByAnnotation
                 .getValue(annotationQualifiedName)
                 .values
                 .sortedBy { it.qualifiedName }
 
-            val content = when (annotationQualifiedName) {
-                RegisterInteraction::class.qualifiedName!! -> interactionTemplate(outputPackage, entries, pluginClass)
-                RegisterComponent::class.qualifiedName!! -> componentTemplate(outputPackage, entries, pluginClass)
-                RegisterSystem::class.qualifiedName!! -> systemTemplate(outputPackage, entries, pluginClass)
-                else -> error("Unknown annotation: $annotationQualifiedName")
-            }
-
             val sourceFiles = sourceFilesByAnnotation.getValue(annotationQualifiedName).toTypedArray()
-            codeGenerator.createNewFile(
-                Dependencies(true, *sourceFiles),
-                outputPackage,
-                outputObjects.getOrDefault(annotationQualifiedName, "GeneratedRegistry")
-            ).bufferedWriter().use { writer ->
-                writer.write(content)
-            }
+
+            RegistryFileGeneratorStrategy(
+                outputPackage = outputPackage,
+                pluginClass = pluginClass,
+                registryType = registryType,
+                entries = entries,
+                sourceFiles = sourceFiles,
+                codeGenerator = codeGenerator
+            ).generate()
         }
     }
+
+    // --- Finders ---
 
     private fun findAnnotatedClasses(
         resolver: Resolver,
