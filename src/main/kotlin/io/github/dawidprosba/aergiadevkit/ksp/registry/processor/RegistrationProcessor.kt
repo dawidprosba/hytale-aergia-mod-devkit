@@ -15,12 +15,10 @@ import com.google.devtools.ksp.validate
 class RegistrationProcessor(
     environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
-    private val annotationToRegistryType = mapOf(
-        RegisterInteraction::class.qualifiedName!! to RegistryType.INTERACTION,
-        RegisterComponent::class.qualifiedName!! to RegistryType.COMPONENT,
-        RegisterSystem::class.qualifiedName!! to RegistryType.SYSTEM
-    )
-    private val annotationNames = annotationToRegistryType.keys.toList()
+    private val interactionAnnotation = RegisterInteraction::class.qualifiedName!!
+    private val componentAnnotation = RegisterComponent::class.qualifiedName!!
+    private val systemAnnotation = RegisterSystem::class.qualifiedName!!
+    private val annotationNames = listOf(interactionAnnotation, componentAnnotation, systemAnnotation)
 
     private val outputPackage = environment.options["registriesOutputPackage"]
         ?: throw IllegalArgumentException("Missing required option: registriesOutputPackage add it under build.gradle.kts, ksp {..here..}")
@@ -64,23 +62,29 @@ class RegistrationProcessor(
     }
 
     override fun finish() {
-        annotationToRegistryType.forEach { (annotationQualifiedName, registryType) ->
-            val entries = collectedEntriesByAnnotation
-                .getValue(annotationQualifiedName)
-                .values
-                .sortedBy { it.qualifiedName }
+        InteractionRegistryGenerator(
+            outputPackage = outputPackage,
+            pluginClass = pluginClass,
+            entries = collectedEntriesByAnnotation.getValue(interactionAnnotation).values.sortedBy { it.qualifiedName },
+            sourceFiles = sourceFilesByAnnotation.getValue(interactionAnnotation).toTypedArray(),
+            codeGenerator = codeGenerator
+        ).generate()
 
-            val sourceFiles = sourceFilesByAnnotation.getValue(annotationQualifiedName).toTypedArray()
+        ComponentRegistryGenerator(
+            outputPackage = outputPackage,
+            pluginClass = pluginClass,
+            entries = collectedEntriesByAnnotation.getValue(componentAnnotation).values.sortedBy { it.qualifiedName },
+            sourceFiles = sourceFilesByAnnotation.getValue(componentAnnotation).toTypedArray(),
+            codeGenerator = codeGenerator
+        ).generate()
 
-            RegistryFileGeneratorStrategy(
-                outputPackage = outputPackage,
-                pluginClass = pluginClass,
-                registryType = registryType,
-                entries = entries,
-                sourceFiles = sourceFiles,
-                codeGenerator = codeGenerator
-            ).generate()
-        }
+        SystemRegistryGenerator(
+            outputPackage = outputPackage,
+            pluginClass = pluginClass,
+            entries = collectedEntriesByAnnotation.getValue(systemAnnotation).values.sortedBy { it.qualifiedName },
+            sourceFiles = sourceFilesByAnnotation.getValue(systemAnnotation).toTypedArray(),
+            codeGenerator = codeGenerator
+        ).generate()
     }
 
     // --- Finders ---
