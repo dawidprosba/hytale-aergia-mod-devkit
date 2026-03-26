@@ -8,6 +8,9 @@ import com.hypixel.hytale.component.Component
 import com.hypixel.hytale.component.ComponentRegistryProxy
 import com.hypixel.hytale.component.ComponentType
 import com.hypixel.hytale.component.system.ISystem
+import com.hypixel.hytale.event.EventRegistry
+import com.hypixel.hytale.event.IBaseEvent
+import java.util.function.Consumer
 import com.hypixel.hytale.logger.HytaleLogger
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction
 import com.hypixel.hytale.server.core.plugin.registry.CodecMapRegistry
@@ -121,4 +124,14 @@ fun <T : ISystem<EntityStore>> registerSystem(
 
     registry.registerSystem(system)
 
+}
+
+fun <KeyType, EventType : IBaseEvent<KeyType>> registerGlobalEvent(
+    eventClass: KClass<EventType>,
+    handler: Consumer<EventType>,
+    registry: EventRegistry,
+    functionName: String
+) {
+    LOGGER.atInfo().log("Registering global event listener for: %s -> %s", eventClass.simpleName, functionName)
+    registry.registerGlobal(eventClass.java, handler)
 }

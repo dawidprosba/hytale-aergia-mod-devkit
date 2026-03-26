@@ -15,6 +15,13 @@ internal val COMPONENT_REGISTRY_PROXY_TYPE =
 internal val ENTITY_STORE_TYPE =
     ClassName("com.hypixel.hytale.server.core.universe.world.storage", "EntityStore")
 
+internal val EVENT_REGISTRY_TYPE = ClassName("com.hypixel.hytale.event", "EventRegistry")
+
+internal val REGISTER_GLOBAL_EVENT = MemberName(
+    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "registerGlobalEvent"
+)
+
 internal val REGISTER_INTERACTION = MemberName(
     "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
     "registerInteraction"
