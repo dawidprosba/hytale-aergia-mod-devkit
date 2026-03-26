@@ -11,6 +11,10 @@ import CodeWithSteps from '@site/src/components/CodeWithSteps';
 ## Installation
 
 :::warning
+Work in progress, documentation is incomplete
+:::
+
+:::warning
 This library is for Kotlin projects only. It uses KSP (Kotlin Symbol Processing) to generate code at compile time — pure Java projects are not supported.
 :::
 
