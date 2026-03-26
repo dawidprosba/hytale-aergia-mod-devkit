@@ -1,6 +1,7 @@
 package io.github.dawidprosba.aergiadevkit.ksp.registry.processor
 
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterEvent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterGlobalEvent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSystem
@@ -13,7 +14,26 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeArgument
+import com.google.devtools.ksp.symbol.Variance
 import com.google.devtools.ksp.validate
+
+private fun KSType.toKotlinString(): String {
+    val name = declaration.qualifiedName?.asString() ?: return "*"
+    if (arguments.isEmpty()) return name
+    val args = arguments.joinToString(", ", transform = KSTypeArgument::toKotlinString)
+    return "$name<$args>"
+}
+
+private fun KSTypeArgument.toKotlinString(): String {
+    if (variance == Variance.STAR) return "*"
+    val resolved = type?.resolve() ?: return "*"
+    return when (variance) {
+        Variance.COVARIANT -> "out ${resolved.toKotlinString()}"
+        Variance.CONTRAVARIANT -> "in ${resolved.toKotlinString()}"
+        else -> resolved.toKotlinString()
+    }
+}
 
 class RegistrationProcessor(
     environment: SymbolProcessorEnvironment
@@ -22,6 +42,7 @@ class RegistrationProcessor(
     private val componentAnnotation = RegisterComponent::class.qualifiedName!!
     private val systemAnnotation = RegisterSystem::class.qualifiedName!!
     private val globalEventAnnotation = RegisterGlobalEvent::class.qualifiedName!!
+    private val eventAnnotation = RegisterEvent::class.qualifiedName!!
     private val annotationNames = listOf(interactionAnnotation, componentAnnotation, systemAnnotation)
 
     private val outputPackage = environment.options["registriesOutputPackage"]
@@ -37,6 +58,9 @@ class RegistrationProcessor(
 
     private val collectedGlobalEventEntries = mutableMapOf<String, GlobalEventEntryMetadata>()
     private val globalEventSourceFiles = mutableSetOf<KSFile>()
+
+    private val collectedEventEntries = mutableMapOf<String, EventEntryMetadata>()
+    private val eventSourceFiles = mutableSetOf<KSFile>()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val deferredSymbols = mutableListOf<KSAnnotated>()
@@ -77,8 +101,9 @@ class RegistrationProcessor(
                 .first { it.annotationType.resolve().declaration.qualifiedName?.asString() == globalEventAnnotation }
                 .arguments.associate { it.name?.asString().orEmpty() to it.value }
 
-            val eventClassQualifiedName = (args["eventClass"] as? KSType)
-                ?.declaration?.qualifiedName?.asString()
+            val eventClassType = args["eventClass"] as? KSType
+                ?: error("Missing eventClass for @RegisterGlobalEvent on $fqn")
+            val eventClassQualifiedName = eventClassType.declaration.qualifiedName?.asString()
                 ?: error("Missing eventClass for @RegisterGlobalEvent on $fqn")
 
             val enabled = args.getOrDefault("enabled", true) as Boolean
@@ -94,10 +119,53 @@ class RegistrationProcessor(
                 containingClassQualifiedName = containingClassQualifiedName,
                 functionName = fn.simpleName.asString(),
                 eventClassQualifiedName = eventClassQualifiedName,
+                eventParamTypeName = fn.parameters.firstOrNull()?.type?.resolve()?.toKotlinString(),
                 hasEventParam = fn.parameters.isNotEmpty(),
                 enabled = enabled
             )
             fn.containingFile?.let { globalEventSourceFiles.add(it) }
+        }
+
+        val eventSymbols = resolver.getSymbolsWithAnnotation(eventAnnotation)
+            .filterIsInstance<KSFunctionDeclaration>()
+            .toList()
+
+        deferredSymbols += eventSymbols.filterNot { it.validate() }
+
+        eventSymbols.filter { it.validate() }.forEach { fn ->
+            val fqn = fn.qualifiedName?.asString() ?: return@forEach
+            val args = fn.annotations
+                .first { it.annotationType.resolve().declaration.qualifiedName?.asString() == eventAnnotation }
+                .arguments.associate { it.name?.asString().orEmpty() to it.value }
+
+            val eventClassType = args["eventClass"] as? KSType
+                ?: error("Missing eventClass for @RegisterEvent on $fqn")
+            val eventClassQualifiedName = eventClassType.declaration.qualifiedName?.asString()
+                ?: error("Missing eventClass for @RegisterEvent on $fqn")
+
+            val subjectClassQualifiedName = (args["subject"] as? KSType)
+                ?.declaration?.qualifiedName?.asString()
+                ?: error("Missing subject for @RegisterEvent on $fqn")
+
+            val enabled = args.getOrDefault("enabled", true) as Boolean
+
+            val companionDecl = fn.parentDeclaration as? KSClassDeclaration
+            val outerClass = companionDecl?.parentDeclaration as? KSClassDeclaration
+            val containingClassQualifiedName = outerClass?.qualifiedName?.asString()
+                ?: companionDecl?.qualifiedName?.asString()
+                ?: error("Cannot resolve containing class for @RegisterEvent on $fqn")
+
+            collectedEventEntries[fqn] = EventEntryMetadata(
+                functionQualifiedName = fqn,
+                containingClassQualifiedName = containingClassQualifiedName,
+                functionName = fn.simpleName.asString(),
+                eventClassQualifiedName = eventClassQualifiedName,
+                eventParamTypeName = fn.parameters.firstOrNull()?.type?.resolve()?.toKotlinString(),
+                subjectClassQualifiedName = subjectClassQualifiedName,
+                hasEventParam = fn.parameters.isNotEmpty(),
+                enabled = enabled
+            )
+            fn.containingFile?.let { eventSourceFiles.add(it) }
         }
 
         return deferredSymbols
@@ -133,6 +201,14 @@ class RegistrationProcessor(
             pluginClass = pluginClass,
             entries = collectedGlobalEventEntries.values.sortedBy { it.functionQualifiedName },
             sourceFiles = globalEventSourceFiles.toTypedArray(),
+            codeGenerator = codeGenerator
+        ).generate()
+
+        EventRegistryGenerator(
+            outputPackage = outputPackage,
+            pluginClass = pluginClass,
+            entries = collectedEventEntries.values.sortedBy { it.functionQualifiedName },
+            sourceFiles = eventSourceFiles.toTypedArray(),
             codeGenerator = codeGenerator
         ).generate()
     }

@@ -126,12 +126,25 @@ fun <T : ISystem<EntityStore>> registerSystem(
 
 }
 
-fun <KeyType, EventType : IBaseEvent<KeyType>> registerGlobalEvent(
-    eventClass: KClass<EventType>,
-    handler: Consumer<EventType>,
+@Suppress("UNCHECKED_CAST")
+fun registerGlobalEvent(
+    eventClass: KClass<*>,
+    handler: Consumer<*>,
     registry: EventRegistry,
     functionName: String
 ) {
     LOGGER.atInfo().log("Registering global event listener for: %s -> %s", eventClass.simpleName, functionName)
-    registry.registerGlobal(eventClass.java, handler)
+    registry.registerGlobal(eventClass.java as Class<IBaseEvent<Any>>, handler as Consumer<IBaseEvent<Any>>)
+}
+
+@Suppress("UNCHECKED_CAST")
+fun registerEvent(
+    eventClass: KClass<*>,
+    key: Any,
+    handler: Consumer<*>,
+    registry: EventRegistry,
+    functionName: String
+) {
+    LOGGER.atInfo().log("Registering event listener for: %s[%s] -> %s", eventClass.simpleName, key, functionName)
+    registry.register(eventClass.java as Class<IBaseEvent<Any>>, key, handler as Consumer<IBaseEvent<Any>>)
 }

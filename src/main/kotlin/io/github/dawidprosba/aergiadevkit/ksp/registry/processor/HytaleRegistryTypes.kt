@@ -22,6 +22,11 @@ internal val REGISTER_GLOBAL_EVENT = MemberName(
     "registerGlobalEvent"
 )
 
+internal val REGISTER_EVENT = MemberName(
+    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "registerEvent"
+)
+
 internal val REGISTER_INTERACTION = MemberName(
     "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
     "registerInteraction"

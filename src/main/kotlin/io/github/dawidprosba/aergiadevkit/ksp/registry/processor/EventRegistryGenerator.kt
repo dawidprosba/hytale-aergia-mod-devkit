@@ -5,10 +5,10 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
 import com.squareup.kotlinpoet.*
 
-class GlobalEventRegistryGenerator(
+class EventRegistryGenerator(
     private val outputPackage: String,
     private val pluginClass: String,
-    private val entries: List<GlobalEventEntryMetadata>,
+    private val entries: List<EventEntryMetadata>,
     private val sourceFiles: Array<KSFile>,
     private val codeGenerator: CodeGenerator
 ) {
@@ -57,22 +57,23 @@ class GlobalEventRegistryGenerator(
         return CodeBlock.builder().apply {
             entries.forEach { entry ->
                 val eventClass = ClassName.bestGuess(entry.eventClassQualifiedName)
+                val subjectClass = ClassName.bestGuess(entry.subjectClassQualifiedName)
                 val containingClass = ClassName.bestGuess(entry.containingClassQualifiedName)
                 if (!entry.enabled) {
                     addStatement(
                         "LOGGER.atWarning().log(%S, %S)",
-                        "Skipping global event '%s' (%s), reason -> disabled",
+                        "Skipping event '%s' (%s), reason -> disabled",
                         entry.functionQualifiedName
                     )
                 } else if (entry.hasEventParam) {
                     addStatement(
-                        "%M(%T::class, { event -> %T.Companion.%N(event as %L) }, registry, %S)",
-                        REGISTER_GLOBAL_EVENT, eventClass, containingClass, entry.functionName, entry.eventParamTypeName, entry.functionName
+                        "%M(%T::class, %T::class.java, { event -> %T.Companion.%N(event as %L) }, registry, %S)",
+                        REGISTER_EVENT, eventClass, subjectClass, containingClass, entry.functionName, entry.eventParamTypeName, entry.functionName
                     )
                 } else {
                     addStatement(
-                        "%M(%T::class, { %T.Companion.%N() }, registry, %S)",
-                        REGISTER_GLOBAL_EVENT, eventClass, containingClass, entry.functionName, entry.functionName
+                        "%M(%T::class, %T::class.java, { %T.Companion.%N() }, registry, %S)",
+                        REGISTER_EVENT, eventClass, subjectClass, containingClass, entry.functionName, entry.functionName
                     )
                 }
             }
@@ -80,6 +81,6 @@ class GlobalEventRegistryGenerator(
     }
 
     private companion object {
-        const val OBJECT_NAME = "GlobalEventRegistryGenerated"
+        const val OBJECT_NAME = "EventRegistryGenerated"
     }
 }
