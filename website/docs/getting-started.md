@@ -4,6 +4,7 @@ sidebar_position: 2
 ---
 
 import Version from '@site/src/components/Version';
+import CodeWithSteps from '@site/src/components/CodeWithSteps';
 
 # Getting Started
 
@@ -15,12 +16,17 @@ This library is for Kotlin projects only. It uses KSP (Kotlin Symbol Processing)
 
 Apply the KSP plugin and add the devkit as a dependency:
 
-```kotlin
-// build.gradle.kts
+<CodeWithSteps language="kotlin" steps={[
+  "Apply the KSP plugin for compile-time code generation.",
+  "Add the devkit as both a runtime dependency and a KSP processor, You either specify version or use '0.+' to always get the latest of the alpha versions.",
+  "Configure the output package for generated registries and your plugin's main class.",
+]}>
+{`// build.gradle.kts
 plugins {
-    // KSP version must match your Kotlin version: <kotlin-version>-<ksp-version>
-    // See https://github.com/google/ksp/releases for the full list
-    id("com.google.devtools.ksp") version "2.1.20-1.0.32"
+    kotlin("jvm") version "2.3.20"
+    id("hytale-mod") version "0.+"
+    // add-next-line
+    id("com.google.devtools.ksp") version "2.3.6" // (1)
 }
 
 repositories {
@@ -28,17 +34,18 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:<Version />")
-    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:<Version />")
+    // add-start
+    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:0.+") // (2)
+    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:0.+")
+    // add-end
 }
 
 ksp {
-    // Package where generated registries will be placed
-    arg("registriesOutputPackage", "com.example.mymod.registries.generated")
-    // Your mod's main plugin class (used in generated registry bootstrapper)
+    
+    arg("registriesOutputPackage", "com.example.mymod.registries.generated") // (3)
     arg("pluginClass", "com.example.mymod.MyMod")
-}
-```
+}`}
+</CodeWithSteps>
 
 ## Wire up the generated registries
 
