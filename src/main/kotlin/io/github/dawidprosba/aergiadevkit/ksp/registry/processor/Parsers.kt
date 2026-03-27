@@ -6,6 +6,38 @@ import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeArgument
 import com.google.devtools.ksp.symbol.Variance
 
+internal data class RegisterGlobalEventArgs(
+    val eventClassQualifiedName: String,
+    val enabled: Boolean,
+) {
+    companion object {
+        fun from(annotationArgs: Map<String, Any?>, qualifiedName: String) = RegisterGlobalEventArgs(
+            eventClassQualifiedName = (annotationArgs["eventClass"] as? KSType)
+                ?.declaration?.qualifiedName?.asString()
+                ?: error("Missing eventClass for @RegisterGlobalEvent on $qualifiedName"),
+            enabled = annotationArgs.getOrDefault("enabled", true) as Boolean,
+        )
+    }
+}
+
+internal data class RegisterEventArgs(
+    val eventClassQualifiedName: String,
+    val subjectClassQualifiedName: String,
+    val enabled: Boolean,
+) {
+    companion object {
+        fun from(annotationArgs: Map<String, Any?>, qualifiedName: String) = RegisterEventArgs(
+            eventClassQualifiedName = (annotationArgs["eventClass"] as? KSType)
+                ?.declaration?.qualifiedName?.asString()
+                ?: error("Missing eventClass for @RegisterEvent on $qualifiedName"),
+            subjectClassQualifiedName = (annotationArgs["subject"] as? KSType)
+                ?.declaration?.qualifiedName?.asString()
+                ?: error("Missing subject for @RegisterEvent on $qualifiedName"),
+            enabled = annotationArgs.getOrDefault("enabled", true) as Boolean,
+        )
+    }
+}
+
 internal fun KSClassDeclaration.qualifiedNameString(): String =
     qualifiedName?.asString()
         ?: throw IllegalStateException("Unable to resolve qualified name for class ${simpleName.asString()}.")
@@ -21,18 +53,18 @@ internal fun KSFunctionDeclaration.annotationArguments(annotationName: String): 
     }.arguments.associate { it.name?.asString().orEmpty() to it.value }
 
 internal fun KSFunctionDeclaration.containingClassQualifiedName(): String {
-    val companionDecl = parentDeclaration as? KSClassDeclaration
-    val outerClass = companionDecl?.parentDeclaration as? KSClassDeclaration
+    val companionObject = parentDeclaration as? KSClassDeclaration
+    val outerClass = companionObject?.parentDeclaration as? KSClassDeclaration
     return outerClass?.qualifiedName?.asString()
-        ?: companionDecl?.qualifiedName?.asString()
+        ?: companionObject?.qualifiedName?.asString()
         ?: error("Cannot resolve containing class for function ${qualifiedName?.asString()}")
 }
 
 internal fun KSType.toKotlinString(): String {
     val name = declaration.qualifiedName?.asString() ?: return "*"
     if (arguments.isEmpty()) return name
-    val args = arguments.joinToString(", ", transform = KSTypeArgument::toKotlinString)
-    return "$name<$args>"
+    val typeArguments = arguments.joinToString(", ", transform = KSTypeArgument::toKotlinString)
+    return "$name<$typeArguments>"
 }
 
 private fun KSTypeArgument.toKotlinString(): String {
