@@ -9,4 +9,3 @@ class RegistrationProcessorProvider : SymbolProcessorProvider {
         return RegistrationProcessor(environment)
     }
 }
-

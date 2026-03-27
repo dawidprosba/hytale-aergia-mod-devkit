@@ -8,6 +8,9 @@ import com.hypixel.hytale.component.Component
 import com.hypixel.hytale.component.ComponentRegistryProxy
 import com.hypixel.hytale.component.ComponentType
 import com.hypixel.hytale.component.system.ISystem
+import com.hypixel.hytale.event.EventRegistry
+import com.hypixel.hytale.event.IBaseEvent
+import java.util.function.Consumer
 import com.hypixel.hytale.logger.HytaleLogger
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction
 import com.hypixel.hytale.server.core.plugin.registry.CodecMapRegistry
@@ -121,4 +124,27 @@ fun <T : ISystem<EntityStore>> registerSystem(
 
     registry.registerSystem(system)
 
+}
+
+@Suppress("UNCHECKED_CAST")
+fun registerGlobalEvent(
+    eventClass: KClass<*>,
+    handler: Consumer<*>,
+    registry: EventRegistry,
+    functionName: String
+) {
+    LOGGER.atInfo().log("Registering global event listener for: %s -> %s", eventClass.simpleName, functionName)
+    registry.registerGlobal(eventClass.java as Class<IBaseEvent<Any>>, handler as Consumer<IBaseEvent<Any>>)
+}
+
+@Suppress("UNCHECKED_CAST")
+fun registerEvent(
+    eventClass: KClass<*>,
+    key: Any,
+    handler: Consumer<*>,
+    registry: EventRegistry,
+    functionName: String
+) {
+    LOGGER.atInfo().log("Registering event listener for: %s[%s] -> %s", eventClass.simpleName, key, functionName)
+    registry.register(eventClass.java as Class<IBaseEvent<Any>>, key, handler as Consumer<IBaseEvent<Any>>)
 }

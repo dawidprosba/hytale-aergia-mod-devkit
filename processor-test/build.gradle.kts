@@ -27,6 +27,7 @@ tasks.test {
     useJUnitPlatform()
     filter {
         includeTestsMatching("test.CodecGenerationTest")
+        includeTestsMatching("test.RegistryGenerationTest")
     }
     systemProperty(
         "ksp.generated.sources",
