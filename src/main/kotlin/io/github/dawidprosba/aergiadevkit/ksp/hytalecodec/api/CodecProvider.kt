@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.api
+package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.api
 
 import com.hypixel.hytale.codec.builder.BuilderCodec
 

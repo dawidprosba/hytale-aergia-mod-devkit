@@ -1,10 +1,10 @@
-package io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.processor.strategy
+package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor.strategy
 
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.annotations.CodecProperty
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.annotations.validators.CodecProjectileValidator
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.annotations.validators.CodecRequiredValidator
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.validators.CODEC_PROJECTILE_VALIDATOR_TEMPLATE
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.validators.CODEC_REQUIRED_VALIDATOR_TEMPLATE
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.CodecProperty
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.validators.CodecProjectileValidator
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.validators.CodecRequiredValidator
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.validators.CODEC_PROJECTILE_VALIDATOR_TEMPLATE
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.validators.CODEC_REQUIRED_VALIDATOR_TEMPLATE
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSClassDeclaration

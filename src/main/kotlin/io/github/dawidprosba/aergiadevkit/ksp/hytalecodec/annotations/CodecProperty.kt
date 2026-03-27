@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.annotations
+package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations
 
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.SOURCE)

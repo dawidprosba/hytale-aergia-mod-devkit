@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.processor
+package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor
 
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment

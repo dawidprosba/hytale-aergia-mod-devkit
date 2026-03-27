@@ -1,9 +1,9 @@
-package io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.processor
+package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor
 
 import io.github.dawidprosba.aergiadevkit.ksp.extensions.hasAnnotation
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.annotations.CodecProperty
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.annotations.GenerateCodec
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.processor.strategy.CodecFileGeneratorStrategy
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.CodecProperty
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.GenerateCodec
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor.strategy.CodecFileGeneratorStrategy
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment

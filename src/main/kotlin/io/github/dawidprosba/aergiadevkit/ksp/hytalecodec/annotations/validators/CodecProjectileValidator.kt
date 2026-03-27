@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.annotations.validators
+package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.validators
 
 /**
  * Annotation to mark a field as a projectile, which will add a projectile validator to the codec.
