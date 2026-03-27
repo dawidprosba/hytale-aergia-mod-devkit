@@ -1,16 +1,20 @@
-package io.github.dawidprosba.aergiadevkit.ksp.registry.processor
+package io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
 import com.squareup.kotlinpoet.*
+import io.github.dawidprosba.aergiadevkit.ksp.registry.data.GlobalEventEntryMetadata
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.EVENT_REGISTRY_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.HYTALE_LOGGER_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_GLOBAL_EVENT
 
 class GlobalEventRegistryGenerator(
     private val outputPackage: String,
     private val pluginClass: String,
     private val entries: List<GlobalEventEntryMetadata>,
     private val sourceFiles: Array<KSFile>,
-    private val codeGenerator: CodeGenerator
+    private val codeGenerator: CodeGenerator,
 ) {
     fun generate() {
         val fileSpec = FileSpec.builder(outputPackage, OBJECT_NAME)

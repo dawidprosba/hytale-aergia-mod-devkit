@@ -1,10 +1,5 @@
 package io.github.dawidprosba.aergiadevkit.ksp.registry.processor
 
-import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
-import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterEvent
-import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterGlobalEvent
-import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
-import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSystem
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -14,26 +9,20 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSTypeArgument
-import com.google.devtools.ksp.symbol.Variance
 import com.google.devtools.ksp.validate
-
-private fun KSType.toKotlinString(): String {
-    val name = declaration.qualifiedName?.asString() ?: return "*"
-    if (arguments.isEmpty()) return name
-    val args = arguments.joinToString(", ", transform = KSTypeArgument::toKotlinString)
-    return "$name<$args>"
-}
-
-private fun KSTypeArgument.toKotlinString(): String {
-    if (variance == Variance.STAR) return "*"
-    val resolved = type?.resolve() ?: return "*"
-    return when (variance) {
-        Variance.COVARIANT -> "out ${resolved.toKotlinString()}"
-        Variance.CONTRAVARIANT -> "in ${resolved.toKotlinString()}"
-        else -> resolved.toKotlinString()
-    }
-}
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterEvent
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterGlobalEvent
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSystem
+import io.github.dawidprosba.aergiadevkit.ksp.registry.data.EventEntryMetadata
+import io.github.dawidprosba.aergiadevkit.ksp.registry.data.GlobalEventEntryMetadata
+import io.github.dawidprosba.aergiadevkit.ksp.registry.data.RegistryEntryMetadata
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.ComponentRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.EventRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.GlobalEventRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.InteractionRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.SystemRegistryGenerator
 
 class RegistrationProcessor(
     environment: SymbolProcessorEnvironment
@@ -43,7 +32,7 @@ class RegistrationProcessor(
     private val systemAnnotation = RegisterSystem::class.qualifiedName!!
     private val globalEventAnnotation = RegisterGlobalEvent::class.qualifiedName!!
     private val eventAnnotation = RegisterEvent::class.qualifiedName!!
-    private val annotationNames = listOf(interactionAnnotation, componentAnnotation, systemAnnotation)
+    private val simpleAnnotations = listOf(interactionAnnotation, componentAnnotation, systemAnnotation)
 
     private val outputPackage = environment.options["registriesOutputPackage"]
         ?: throw IllegalArgumentException("Missing required option: registriesOutputPackage add it under build.gradle.kts, ksp {..here..}")
@@ -52,9 +41,9 @@ class RegistrationProcessor(
     private val codeGenerator: CodeGenerator = environment.codeGenerator
 
     private val collectedEntriesByAnnotation: MutableMap<String, MutableMap<String, RegistryEntryMetadata>> =
-        annotationNames.associateWith { mutableMapOf<String, RegistryEntryMetadata>() }.toMutableMap()
+        simpleAnnotations.associateWith { mutableMapOf<String, RegistryEntryMetadata>() }.toMutableMap()
     private val sourceFilesByAnnotation: MutableMap<String, MutableSet<KSFile>> =
-        annotationNames.associateWith { mutableSetOf<KSFile>() }.toMutableMap()
+        simpleAnnotations.associateWith { mutableSetOf<KSFile>() }.toMutableMap()
 
     private val collectedGlobalEventEntries = mutableMapOf<String, GlobalEventEntryMetadata>()
     private val globalEventSourceFiles = mutableSetOf<KSFile>()
@@ -65,105 +54,60 @@ class RegistrationProcessor(
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val deferredSymbols = mutableListOf<KSAnnotated>()
 
-        annotationNames.forEach { annotationQualifiedName ->
-            val symbols = findAnnotatedClasses(resolver, annotationQualifiedName)
-            val deferred = symbols.filterNot { it.validate() }
-            val validSymbols = symbols.filter { it.validate() }
+        simpleAnnotations.forEach { annotationQualifiedName ->
+            val symbols = resolver.getSymbolsWithAnnotation(annotationQualifiedName)
+                .filterIsInstance<KSClassDeclaration>()
+                .toList()
 
-            if (deferred.isNotEmpty()) {
-                deferredSymbols += deferred
-            }
+            deferredSymbols += symbols.filterNot { it.validate() }
 
-            validSymbols.forEach { declaration ->
-                val qualifiedName = parseQualifiedName(declaration)
-                val arguments = getAnnotationArguments(declaration, annotationQualifiedName)
+            symbols.filter { it.validate() }.forEach { declaration ->
+                val qualifiedName = declaration.qualifiedNameString()
+                val arguments = declaration.annotationArguments(annotationQualifiedName)
                 val isEnabled = arguments.getOrDefault("enabled", true) as Boolean
 
-                collectedEntriesByAnnotation
-                    .getValue(annotationQualifiedName)[qualifiedName] =
+                collectedEntriesByAnnotation.getValue(annotationQualifiedName)[qualifiedName] =
                     RegistryEntryMetadata(qualifiedName, isEnabled)
-
-                declaration.containingFile?.let { file ->
-                    sourceFilesByAnnotation.getValue(annotationQualifiedName).add(file)
-                }
+                declaration.containingFile?.let { sourceFilesByAnnotation.getValue(annotationQualifiedName).add(it) }
             }
         }
 
-        val globalEventSymbols = resolver.getSymbolsWithAnnotation(globalEventAnnotation)
-            .filterIsInstance<KSFunctionDeclaration>()
-            .toList()
-
-        deferredSymbols += globalEventSymbols.filterNot { it.validate() }
-
-        globalEventSymbols.filter { it.validate() }.forEach { fn ->
-            val fqn = fn.qualifiedName?.asString() ?: return@forEach
-            val args = fn.annotations
-                .first { it.annotationType.resolve().declaration.qualifiedName?.asString() == globalEventAnnotation }
-                .arguments.associate { it.name?.asString().orEmpty() to it.value }
-
-            val eventClassType = args["eventClass"] as? KSType
+        deferredSymbols += processEventFunctions(resolver, globalEventAnnotation) { fn, fqn, args ->
+            val eventClassQualifiedName = (args["eventClass"] as? KSType)
+                ?.declaration?.qualifiedName?.asString()
                 ?: error("Missing eventClass for @RegisterGlobalEvent on $fqn")
-            val eventClassQualifiedName = eventClassType.declaration.qualifiedName?.asString()
-                ?: error("Missing eventClass for @RegisterGlobalEvent on $fqn")
-
             val enabled = args.getOrDefault("enabled", true) as Boolean
-
-            val companionDecl = fn.parentDeclaration as? KSClassDeclaration
-            val outerClass = companionDecl?.parentDeclaration as? KSClassDeclaration
-            val containingClassQualifiedName = outerClass?.qualifiedName?.asString()
-                ?: companionDecl?.qualifiedName?.asString()
-                ?: error("Cannot resolve containing class for @RegisterGlobalEvent on $fqn")
 
             collectedGlobalEventEntries[fqn] = GlobalEventEntryMetadata(
                 functionQualifiedName = fqn,
-                containingClassQualifiedName = containingClassQualifiedName,
+                containingClassQualifiedName = fn.containingClassQualifiedName(),
                 functionName = fn.simpleName.asString(),
                 eventClassQualifiedName = eventClassQualifiedName,
                 eventParamTypeName = fn.parameters.firstOrNull()?.type?.resolve()?.toKotlinString(),
                 hasEventParam = fn.parameters.isNotEmpty(),
-                enabled = enabled
+                enabled = enabled,
             )
             fn.containingFile?.let { globalEventSourceFiles.add(it) }
         }
 
-        val eventSymbols = resolver.getSymbolsWithAnnotation(eventAnnotation)
-            .filterIsInstance<KSFunctionDeclaration>()
-            .toList()
-
-        deferredSymbols += eventSymbols.filterNot { it.validate() }
-
-        eventSymbols.filter { it.validate() }.forEach { fn ->
-            val fqn = fn.qualifiedName?.asString() ?: return@forEach
-            val args = fn.annotations
-                .first { it.annotationType.resolve().declaration.qualifiedName?.asString() == eventAnnotation }
-                .arguments.associate { it.name?.asString().orEmpty() to it.value }
-
-            val eventClassType = args["eventClass"] as? KSType
+        deferredSymbols += processEventFunctions(resolver, eventAnnotation) { fn, fqn, args ->
+            val eventClassQualifiedName = (args["eventClass"] as? KSType)
+                ?.declaration?.qualifiedName?.asString()
                 ?: error("Missing eventClass for @RegisterEvent on $fqn")
-            val eventClassQualifiedName = eventClassType.declaration.qualifiedName?.asString()
-                ?: error("Missing eventClass for @RegisterEvent on $fqn")
-
             val subjectClassQualifiedName = (args["subject"] as? KSType)
                 ?.declaration?.qualifiedName?.asString()
                 ?: error("Missing subject for @RegisterEvent on $fqn")
-
             val enabled = args.getOrDefault("enabled", true) as Boolean
-
-            val companionDecl = fn.parentDeclaration as? KSClassDeclaration
-            val outerClass = companionDecl?.parentDeclaration as? KSClassDeclaration
-            val containingClassQualifiedName = outerClass?.qualifiedName?.asString()
-                ?: companionDecl?.qualifiedName?.asString()
-                ?: error("Cannot resolve containing class for @RegisterEvent on $fqn")
 
             collectedEventEntries[fqn] = EventEntryMetadata(
                 functionQualifiedName = fqn,
-                containingClassQualifiedName = containingClassQualifiedName,
+                containingClassQualifiedName = fn.containingClassQualifiedName(),
                 functionName = fn.simpleName.asString(),
                 eventClassQualifiedName = eventClassQualifiedName,
                 eventParamTypeName = fn.parameters.firstOrNull()?.type?.resolve()?.toKotlinString(),
                 subjectClassQualifiedName = subjectClassQualifiedName,
                 hasEventParam = fn.parameters.isNotEmpty(),
-                enabled = enabled
+                enabled = enabled,
             )
             fn.containingFile?.let { eventSourceFiles.add(it) }
         }
@@ -177,7 +121,7 @@ class RegistrationProcessor(
             pluginClass = pluginClass,
             entries = collectedEntriesByAnnotation.getValue(interactionAnnotation).values.sortedBy { it.qualifiedName },
             sourceFiles = sourceFilesByAnnotation.getValue(interactionAnnotation).toTypedArray(),
-            codeGenerator = codeGenerator
+            codeGenerator = codeGenerator,
         ).generate()
 
         ComponentRegistryGenerator(
@@ -185,7 +129,7 @@ class RegistrationProcessor(
             pluginClass = pluginClass,
             entries = collectedEntriesByAnnotation.getValue(componentAnnotation).values.sortedBy { it.qualifiedName },
             sourceFiles = sourceFilesByAnnotation.getValue(componentAnnotation).toTypedArray(),
-            codeGenerator = codeGenerator
+            codeGenerator = codeGenerator,
         ).generate()
 
         SystemRegistryGenerator(
@@ -193,7 +137,7 @@ class RegistrationProcessor(
             pluginClass = pluginClass,
             entries = collectedEntriesByAnnotation.getValue(systemAnnotation).values.sortedBy { it.qualifiedName },
             sourceFiles = sourceFilesByAnnotation.getValue(systemAnnotation).toTypedArray(),
-            codeGenerator = codeGenerator
+            codeGenerator = codeGenerator,
         ).generate()
 
         GlobalEventRegistryGenerator(
@@ -201,7 +145,7 @@ class RegistrationProcessor(
             pluginClass = pluginClass,
             entries = collectedGlobalEventEntries.values.sortedBy { it.functionQualifiedName },
             sourceFiles = globalEventSourceFiles.toTypedArray(),
-            codeGenerator = codeGenerator
+            codeGenerator = codeGenerator,
         ).generate()
 
         EventRegistryGenerator(
@@ -209,18 +153,24 @@ class RegistrationProcessor(
             pluginClass = pluginClass,
             entries = collectedEventEntries.values.sortedBy { it.functionQualifiedName },
             sourceFiles = eventSourceFiles.toTypedArray(),
-            codeGenerator = codeGenerator
+            codeGenerator = codeGenerator,
         ).generate()
     }
 
-    // --- Finders ---
-
-    private fun findAnnotatedClasses(
+    private fun processEventFunctions(
         resolver: Resolver,
-        annotationName: String
-    ): List<KSClassDeclaration> {
-        return resolver.getSymbolsWithAnnotation(annotationName)
-            .filterIsInstance<KSClassDeclaration>()
+        annotationName: String,
+        onValid: (fn: KSFunctionDeclaration, fqn: String, args: Map<String, Any?>) -> Unit,
+    ): List<KSAnnotated> {
+        val symbols = resolver.getSymbolsWithAnnotation(annotationName)
+            .filterIsInstance<KSFunctionDeclaration>()
             .toList()
+
+        symbols.filter { it.validate() }.forEach { fn ->
+            val fqn = fn.qualifiedName?.asString() ?: return@forEach
+            onValid(fn, fqn, fn.annotationArguments(annotationName))
+        }
+
+        return symbols.filterNot { it.validate() }
     }
 }
