@@ -19,6 +19,7 @@ class HytaleCodecGeneratorProcessor(
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver.findClassesWithAnnotation(generateCodecAnnotationName)
+            .filterNot { it.simpleName.asString() in processedClasses }
             .forEach { classDeclaration ->
                 processClass(classDeclaration)
             }

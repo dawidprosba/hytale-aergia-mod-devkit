@@ -66,6 +66,7 @@ class CodecFileGenerator(
         ).use { stream ->
             stream.writer().use { fileSpec.writeTo(it) }
         }
+
     }
 
     /**
@@ -110,7 +111,7 @@ class CodecFileGenerator(
         properties.forEach { property ->
             addPropertyCodecChain(codeBlockBuilder, property)
         }
-
+        codeBlockBuilder.add(".build()")
         return codeBlockBuilder.build()
     }
 
@@ -142,7 +143,8 @@ class CodecFileGenerator(
             )
         } catch (e: Exception) {
             throw IllegalArgumentException(
-                "Failed to parse @$codecPropertyAnnotationName on ${property.simpleName.asString()}",
+                "Failed to parse @$codecPropertyAnnotationName on " +
+                        "${classDeclaration.simpleName.asString()}.${property.simpleName.asString()}: ${e.message}",
                 e
             )
         }

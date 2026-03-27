@@ -4,7 +4,6 @@ package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations
 @Retention(AnnotationRetention.SOURCE)
 annotation class CodecProperty(
     val documentation: String,
-    val required: Boolean = true,
-    val defaultValue: String = ""
+    val required: Boolean = true
 )
 
