@@ -11,3 +11,5 @@ plugins {
 }
 
 rootProject.name = "hytale-aergia-mod-devkit"
+
+include(":processor-test")
