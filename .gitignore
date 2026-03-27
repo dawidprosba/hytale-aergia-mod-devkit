@@ -17,3 +17,4 @@ Thumbs.db
 # Python / MkDocs
 .venv/
 site/
+node_modules/

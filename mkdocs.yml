@@ -3,9 +3,12 @@ site_url: https://dawidprosba.github.io/hytale-aergia-mod-devkit/
 repo_url: https://github.com/dawidprosba/hytale-aergia-mod-devkit
 repo_name: dawidprosba/hytale-aergia-mod-devkit
 docs_dir: docs
+watch:
+  - overrides
 
 theme:
   name: material
+  custom_dir: overrides
   icon:
     logo: material/tools
   palette:
@@ -59,3 +62,13 @@ markdown_extensions:
   - md_in_html
   - tables
   - footnotes
+
+extra:
+  server_version: "2026.03.26-89796e57b"
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+  - Guides:
+    - Converting Java Plugin to Kotlin: java-to-kotlin.md
