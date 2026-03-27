@@ -146,6 +146,14 @@ class RegistryGenerationTest {
     }
 
     @Test
+    fun `global event with type param casts event to upper bound type`() {
+        assertContains(
+            generatedContent("GlobalEventRegistryGenerated"),
+            """registerGlobalEvent(StubEvent::class, { event -> TestEventHandlers.Companion.onGlobalEventWithTypeParam(event as test.fixtures.registry.StubEvent) }, registry, "onGlobalEventWithTypeParam")"""
+        )
+    }
+
+    @Test
     fun `global event registry skips disabled handler with warning`() {
         assertContains(
             generatedContent("GlobalEventRegistryGenerated"),

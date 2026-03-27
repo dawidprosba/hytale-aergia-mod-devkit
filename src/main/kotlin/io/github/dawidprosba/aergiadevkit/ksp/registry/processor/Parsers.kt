@@ -4,6 +4,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSType
 import com.google.devtools.ksp.symbol.KSTypeArgument
+import com.google.devtools.ksp.symbol.KSTypeParameter
 import com.google.devtools.ksp.symbol.Variance
 
 internal data class RegisterGlobalEventArgs(
@@ -61,7 +62,11 @@ internal fun KSFunctionDeclaration.containingClassQualifiedName(): String {
 }
 
 internal fun KSType.toKotlinString(): String {
-    val name = declaration.qualifiedName?.asString() ?: return "*"
+    if (declaration is KSTypeParameter) {
+        val upperBound = (declaration as KSTypeParameter).bounds.firstOrNull()?.resolve()
+        return upperBound?.toKotlinString() ?: "kotlin.Any"
+    }
+    val name = declaration.qualifiedName?.asString() ?: return "kotlin.Any"
     if (arguments.isEmpty()) return name
     val typeArguments = arguments.joinToString(", ", transform = KSTypeArgument::toKotlinString)
     return "$name<$typeArguments>"

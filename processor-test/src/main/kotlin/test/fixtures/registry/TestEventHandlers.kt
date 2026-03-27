@@ -14,6 +14,9 @@ class TestEventHandlers {
         @RegisterGlobalEvent(StubEvent::class, enabled = false)
         fun onDisabledGlobalEvent() {}
 
+        @RegisterGlobalEvent(StubEvent::class)
+        fun <E : StubEvent> onGlobalEventWithTypeParam(event: E) {}
+
         @RegisterEvent(StubEvent::class, StubSubject::class)
         fun onEvent() {}
 
