@@ -11,7 +11,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import io.github.dawidprosba.aergiadevkit.ksp.extensions.findClassesWithAnnotation
 import io.github.dawidprosba.aergiadevkit.ksp.extensions.findPropertiesWithAnnotation
 
-class HytaleCodecGeneratorProcessor(
+class HytaleBuilderCodecPrrocessor(
     private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
     private val processedClasses = mutableSetOf<String>()
@@ -19,7 +19,7 @@ class HytaleCodecGeneratorProcessor(
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver.findClassesWithAnnotation(generateCodecAnnotationName)
-            .filterNot { it.simpleName.asString() in processedClasses }
+            .filterNot { it.qualifiedName?.asString() in processedClasses }
             .forEach { classDeclaration ->
                 processClass(classDeclaration)
             }
@@ -49,6 +49,6 @@ class HytaleCodecGeneratorProcessor(
             codeGenerator = environment.codeGenerator
         ).generate()
 
-        processedClasses.add(className)
+        processedClasses.add(classDeclaration.qualifiedName!!.asString())
     }
 }
