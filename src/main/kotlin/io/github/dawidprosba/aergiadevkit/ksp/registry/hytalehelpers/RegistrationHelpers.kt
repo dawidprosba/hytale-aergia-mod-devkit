@@ -1,6 +1,6 @@
 package io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers
 
-import io.github.dawidprosba.aergiadevkit.ksp.hytale_codec.api.CodecProvider
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.api.CodecProvider
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSystem
