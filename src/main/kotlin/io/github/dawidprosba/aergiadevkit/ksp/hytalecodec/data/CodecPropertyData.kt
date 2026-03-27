@@ -10,7 +10,7 @@ data class CodecPropertyData(
         isInherited: Boolean = false,
     ) : this(
         documentation = annotationArgs["documentation"] as? String? ?: error("Missing documentation."),
-        required = annotationArgs["required"] as? Boolean? ?: false,
+        required = annotationArgs["required"] as? Boolean ?: true,
         treatAsInherited = isInherited,
     )
 
