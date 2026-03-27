@@ -164,7 +164,7 @@ class RegistryGenerationTest {
     @Test
     fun `global event registry does not register disabled handler`() {
         assertFalse(
-            generatedContent("GlobalEventRegistryGenerated").contains("onDisabledGlobalEvent()"),
+            generatedContent("GlobalEventRegistryGenerated").contains("registerGlobalEvent(StubEvent::class, { TestEventHandlers.Companion.onDisabledGlobalEvent"),
             "Disabled global event handler should not be registered"
         )
     }
@@ -201,6 +201,14 @@ class RegistryGenerationTest {
     }
 
     @Test
+    fun `event with type param casts event to upper bound type`() {
+        assertContains(
+            generatedContent("EventRegistryGenerated"),
+            """registerEvent(StubEvent::class, StubSubject::class.java, { event -> TestEventHandlers.Companion.onEventWithTypeParam(event as test.fixtures.registry.StubEvent) }, registry, "onEventWithTypeParam")"""
+        )
+    }
+
+    @Test
     fun `event registry skips disabled handler with warning`() {
         assertContains(
             generatedContent("EventRegistryGenerated"),
@@ -211,7 +219,7 @@ class RegistryGenerationTest {
     @Test
     fun `event registry does not register disabled handler`() {
         assertFalse(
-            generatedContent("EventRegistryGenerated").contains("onDisabledEvent()"),
+            generatedContent("EventRegistryGenerated").contains("registerEvent(StubEvent::class, StubSubject::class.java, { TestEventHandlers.Companion.onDisabledEvent"),
             "Disabled event handler should not be registered"
         )
     }

@@ -23,6 +23,9 @@ class TestEventHandlers {
         @RegisterEvent(StubEvent::class, StubSubject::class)
         fun onEventWithParam(event: StubEvent) {}
 
+        @RegisterEvent(StubEvent::class, StubSubject::class)
+        fun <E : StubEvent> onEventWithTypeParam(event: E) {}
+
         @RegisterEvent(StubEvent::class, StubSubject::class, enabled = false)
         fun onDisabledEvent() {}
     }
