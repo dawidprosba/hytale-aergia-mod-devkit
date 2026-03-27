@@ -11,6 +11,6 @@ fun KSAnnotated.getAnnotation(simpleName: String): KSAnnotation? {
     return annotations.firstOrNull { it.shortName.asString() == simpleName }
 }
 
-fun KSAnnotation.getArgs(): Map<String?, Any?> {
-    return arguments.associate { it.name?.asString() to it.value }
+fun KSAnnotation.getArgs(): Map<String, Any?> {
+    return arguments.associate { it.name!!.asString() to it.value }
 }

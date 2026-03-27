@@ -1,7 +1,7 @@
 package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.validators
 
 /**
- * Annotation to mark a field as required, which will add a non-null validator to the codec.
+ * Marks field as required in the codec.
  */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.SOURCE)
