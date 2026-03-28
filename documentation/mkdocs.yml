@@ -1,0 +1,104 @@
+site_name: Aergia Mod Devkit
+site_url: https://dawidprosba.github.io/hytale-aergia-mod-devkit/
+repo_url: https://github.com/dawidprosba/hytale-aergia-mod-devkit
+repo_name: dawidprosba/hytale-aergia-mod-devkit
+docs_dir: docs
+watch:
+  - overrides
+
+theme:
+  name: material
+  custom_dir: overrides
+  icon:
+    logo: material/tools
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - macros
+
+extra:
+  server_version: "2026.03.26-89796e57b"
+  devkit_version: "0.0.2"
+  version:
+    provider: mike
+
+nav:
+  - Home:
+    - index.md
+    - Getting Started: home/getting-started.md
+    - Registries:
+       - Component Registry: home/registries/component-registry.md
+       - Event Registry: home/registries/event-registry.md
+       - Global Event Registry: home/registries/global-event-registry.md
+       - Interaction Registry: home/registries/interaction-registry.md
+       - System Registry: home/registries/system-registry.md
+    - Annotations:
+      - annotations/index.md
+      - Codec:
+        - "@GenerateCodec": annotations/generate-codec.md
+        - "@CodecProperty": annotations/codec-property.md
+        - Validators:
+          - "@CodecRequiredValidator": annotations/codec-required-validator.md
+          - "@CodecProjectileValidator": annotations/codec-projectile-validator.md
+      - Registry:
+        - "@RegisterComponent": annotations/register-component.md
+        - "@RegisterInteraction": annotations/register-interaction.md
+        - "@RegisterSystem": annotations/register-system.md
+        - "@RegisterGlobalEvent": annotations/register-global-event.md
+        - "@RegisterEvent": annotations/register-event.md
+  - Guides:
+    - Converting Java Plugin to Kotlin: guides/java-to-kotlin.md

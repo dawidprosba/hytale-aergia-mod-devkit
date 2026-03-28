@@ -13,3 +13,8 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Python / MkDocs
+.venv/
+site/
+node_modules/
