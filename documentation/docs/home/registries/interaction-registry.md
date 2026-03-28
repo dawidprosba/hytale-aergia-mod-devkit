@@ -2,7 +2,7 @@
 
 Use `@RegisterInteraction` and `@GenerateCodec`.
 
-# How to register an interaction
+## How to register an interaction
 
 ## 1. Annotate your interaction class
 
@@ -64,7 +64,7 @@ open class SimpleProjectileLaunchInteraction : SimpleInstantInteraction() {
 }
 ```
 
-# Register interactions in your plugin
+## Register interactions in your plugin
 
 Call `InteractionRegistryGenerated.registerAll` in your plugin's `setup` method.
 

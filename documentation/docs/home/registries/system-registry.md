@@ -2,7 +2,7 @@
 
 Use `@RegisterSystem`.
 
-# How to register a system
+## How to register a system
 
 ## 1. Annotate your system class
 
@@ -26,7 +26,7 @@ class HomingMissileTickSystem : EntityTickingSystem<EntityStore>() {
 }
 ```
 
-# Register systems in your plugin
+## Register systems in your plugin
 
 Call `SystemRegistryGenerated.registerAll` in your plugin's `setup` method.
 

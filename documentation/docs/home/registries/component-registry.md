@@ -2,7 +2,7 @@
 
 Use `@RegisterComponent` and `@GenerateCodec`.
 
-# How to register a component
+## How to register a component
 
 ## 1. Annotate your component
 
@@ -62,7 +62,7 @@ class HomingProjectileComponent : Component<EntityStore> {
 }
 ```
 
-# Register components in your plugin
+## Register components in your plugin
 
 Once your components are defined, call `ComponentRegistryGenerated.registerAll` in your plugin's `setup` method.
 

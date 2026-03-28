@@ -2,7 +2,7 @@
 
 Use `@RegisterEvent`.
 
-# How to register an event listener
+## How to register an event listener
 
 ## 1. Annotate your listener method
 
@@ -33,7 +33,7 @@ Add `@RegisterEvent(EventClass::class, TypeParam::class)` to a method inside a `
     }
     ```
 
-# Register listeners in your plugin
+## Register listeners in your plugin
 
 Call `EventRegistryGenerated.registerAll` in your plugin's `setup` method.
 

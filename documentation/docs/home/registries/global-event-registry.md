@@ -2,7 +2,7 @@
 
 Use `@RegisterGlobalEvent`.
 
-# How to register a global event listener
+## How to register a global event listener
 
 ## 1. Annotate your listener method
 
@@ -43,7 +43,7 @@ fun examplePlayerReadyEventWithParam(event: PlayerReadyEvent) {
 }
 ```
 
-# Register listeners in your plugin
+## Register listeners in your plugin
 
 Call `GlobalEventRegistryGenerated.registerAll` in your plugin's `setup` method.
 
