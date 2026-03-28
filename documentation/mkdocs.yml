@@ -82,5 +82,6 @@ nav:
     - Getting Started: home/getting-started.md
     - Registries:
        - Component Registry: home/registries/component-registry.md
+       - Event Registry: home/registries/event-registry.md
   - Guides:
     - Converting Java Plugin to Kotlin: guides/java-to-kotlin.md
