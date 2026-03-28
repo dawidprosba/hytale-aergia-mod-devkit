@@ -2,7 +2,7 @@
 
 # Hytale Aergia Mod Devkit
 
-*Let Aergia, goddess of laziness.*
+*Aergia, goddess of laziness.*
 
 A KSP annotation processor library for Hytale mod development.
 Annotate your classes — Aergia generates the boilerplate at compile time.
@@ -42,7 +42,7 @@ You focus on the creative work.
 | `@RegisterGlobalEvent` | `function` | Registers a global event listener |
 | `@RegisterEvent` | `function` | Registers an entity-scoped event listener |
 
-> More annotations are being added alongside active mod development.
+> More annotations are being added (I add them as I go with my mod :D )
 
 ---
 
