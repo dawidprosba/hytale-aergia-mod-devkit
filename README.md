@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏛️ Hytale Aergia Mod Devkit
+# Hytale Aergia Mod Devkit
 
 *Let Aergia, goddess of laziness.*
 
@@ -13,30 +13,42 @@ You focus on the creative work.
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Status](https://img.shields.io/badge/status-work%20in%20progress-yellow)
 
-> ⚠️ **This library is a work in progress.** APIs may change, and new annotations and validators are being added alongside active mod development.
+> **This library is a work in progress.** APIs may change, and new annotations are being added alongside active mod development.
 
-> 📚 **[Full Documentation](#)** *(coming soon)*
+> **[Full Documentation](https://dawidprosba.github.io/hytale-aergia-mod-devkit/latest/)**
 
 </div>
 
 ---
 
-## ✨ What gets generated?
+## What gets generated?
 
-| Annotation | What Aergia generates |
-|---|---|
-| `@RegisterComponent` | Component type registration |
-| `@RegisterSystem` | System registration |
-| `@RegisterInteraction` | Interaction registration |
-| `@GenerateCodec` | Full builder codec from annotated fields |
+### Codec annotations
 
-> More annotations are being added alongside active mod development. 🚧
+| Annotation | Target | Description |
+|---|---|---|
+| `@GenerateCodec` | `class` | Generates a `BuilderCodec` for the annotated class |
+| `@CodecProperty` | `property`, `value parameter` | Marks a field for inclusion in the generated codec |
+| `@CodecRequiredValidator` | `property`, `value parameter` | Adds a non-null validator to a codec field |
+| `@CodecProjectileValidator` | `property`, `value parameter` | Adds the Hytale projectile asset validator to a codec field |
+
+### Registry annotations
+
+| Annotation | Target | Description |
+|---|---|---|
+| `@RegisterComponent` | `class` | Registers a component in the Hytale component registry |
+| `@RegisterSystem` | `class` | Registers a system in the entity store registry |
+| `@RegisterInteraction` | `class` | Registers an interaction in the codec map registry |
+| `@RegisterGlobalEvent` | `function` | Registers a global event listener |
+| `@RegisterEvent` | `function` | Registers an entity-scoped event listener |
+
+> More annotations are being added alongside active mod development.
 
 ---
 
-## 🚀 Installation
+## Installation
 
-> **Kotlin projects only.** This library uses KSP (Kotlin Symbol Processing) to generate code at compile time. It requires a Kotlin project — pure Java projects are not supported.
+> **Kotlin projects only.** This library uses KSP (Kotlin Symbol Processing) to generate code at compile time. Pure Java projects are not supported.
 
 Apply the KSP plugin and add the devkit as a dependency:
 
@@ -59,9 +71,9 @@ dependencies {
 
 ksp {
     // Package where generated registries will be placed
-    arg("registriesOutputPackage", "com.example.mymod.registries.generated")
+    arg("registriesOutputPackage", "com.example.exampleplugin.registries.generated")
     // Your mod's main plugin class (used in generated registry bootstrapper)
-    arg("pluginClass", "com.example.mymod.MyMod")
+    arg("pluginClass", "com.example.exampleplugin.ExamplePlugin")
 }
 ```
 
@@ -69,16 +81,11 @@ ksp {
 
 ### Wire up the generated registries
 
-Aergia generates `ComponentRegistryGenerated`, `SystemRegistryGenerated`, and `InteractionRegistryGenerated` into the package you configured in `registriesOutputPackage`. You need to call them once during your mod's `setup()`:
+Call each generated registry once in your plugin's `setup()`:
 
 ```kotlin
-class MyMod(init: JavaPluginInit) : JavaPlugin(init) {
-
+class ExamplePlugin(init: JavaPluginInit) : JavaPlugin(init) {
     override fun setup() {
-        register()
-    }
-
-    private fun register() {
         ComponentRegistryGenerated.registerAll(
             registry = this.entityStoreRegistry
         )
@@ -88,103 +95,60 @@ class MyMod(init: JavaPluginInit) : JavaPlugin(init) {
         InteractionRegistryGenerated.registerAll(
             registry = this.getCodecRegistry(Interaction.CODEC)
         )
+        GlobalEventRegistryGenerated.registerAll(
+            registry = this.eventRegistry
+        )
+        EventRegistryGenerated.registerAll(
+            registry = this.eventRegistry
+        )
     }
 }
 ```
 
-That's it — every class annotated with `@RegisterComponent`, `@RegisterSystem`, or `@RegisterInteraction` is now registered.
+Every annotated class or function is now registered automatically.
 
 ---
 
-## 🧩 Usage
+## Usage
 
 ### Registering a Component
 
-Annotate your component with `@RegisterComponent` and add `@GenerateCodec` to have its codec generated.
-The companion object must implement `CodecProvider` and `ComponentTypeProvider` — Aergia will fill them in.
+Annotate your component with `@RegisterComponent` and `@GenerateCodec`. The companion object must implement `CodecProvider` and `ComponentTypeProvider`.
 
 ```kotlin
 @RegisterComponent("HomingProjectileComponent")
 @GenerateCodec
-class HomingProjectileComponent(config: HomingProjectileDTO) : Component<EntityStore> {
+class HomingProjectileComponent : Component<EntityStore> {
+    @CodecProperty(documentation = "Enable/Disable Homing Feature")
+    var isEnabled = false
+    @CodecProperty(documentation = "Maximum distance to search for valid targets when locking on.")
+    var homingRange = 0.0
+    @CodecProperty(documentation = "How quickly the projectile can turn toward its target each tick, in degrees.")
+    var turnRateDegreesPerTick = 0.0
+    // ...
 
-    @CodecProperty(documentation = "Homing projectile configuration")
-    var homingProjectileDTO: HomingProjectileDTO = config
-
-    var targetEntityRef: Ref<EntityStore>? = null
-
-    constructor() : this(HomingProjectileDTO())
-
-    override fun clone() = HomingProjectileComponent(homingProjectileDTO)
-
-    companion object : CodecProvider<HomingProjectileComponent>,
-                       ComponentTypeProvider<HomingProjectileComponent> {
-        override val CODEC: BuilderCodec<HomingProjectileComponent> = CodecBuilderHomingProjectileComponent
+    companion object : CodecProvider<HomingProjectileComponent>, ComponentTypeProvider<HomingProjectileComponent> {
         override var componentType: ComponentType<EntityStore, HomingProjectileComponent>? = null
+        override val CODEC: BuilderCodec<HomingProjectileComponent> =
+            CodecBuilderHomingProjectileComponent
     }
 }
 ```
 
-<details>
-<summary>📄 See generated output</summary>
-
-**`ComponentRegistryGenerated.kt`**
-```kotlin
-// Auto-generated by Aergia. Do not edit manually.
-object ComponentRegistryGenerated {
-    fun registerAll(registry: ComponentRegistryProxy<EntityStore>) {
-        registerComponent(HomingProjectileComponent::class, registry)
-    }
-}
-```
-
-**`HomingProjectileComponentCodec.kt`**
-```kotlin
-// Auto-generated by Aergia. Do not edit manually.
-val CodecBuilderHomingProjectileComponent: BuilderCodec<HomingProjectileComponent> =
-    BuilderCodec.builder(HomingProjectileComponent::class.java, ::HomingProjectileComponent)
-    .appendInherited(KeyedCodec("HomingProjectileDTO", HomingProjectileDTO.CODEC, true),
-        { config, value -> config.homingProjectileDTO = value },
-        { config -> config.homingProjectileDTO },
-        { target, parent -> target.homingProjectileDTO = parent.homingProjectileDTO }
-    )
-    .documentation("Homing projectile configuration")
-    .add()
-    .build()
-```
-
-</details>
+`CodecBuilderHomingProjectileComponent` is generated at compile time. The name follows the pattern `CodecBuilder<YourClassName>`.
 
 ---
 
 ### Registering a System
 
+No ID or companion object needed — just annotate the class.
+
 ```kotlin
-@RegisterSystem
+@RegisterSystem()
 class HomingMissileTickSystem : EntityTickingSystem<EntityStore>() {
-
-    override fun tick(dt: Float, index: Int, chunk: ArchetypeChunk<EntityStore>, ...) {
-        // your tick logic
-    }
-
-    override fun getQuery(): Query<EntityStore> = archetype
+    // ...
 }
 ```
-
-<details>
-<summary>📄 See generated output</summary>
-
-**`SystemRegistryGenerated.kt`**
-```kotlin
-// Auto-generated by Aergia. Do not edit manually.
-object SystemRegistryGenerated {
-    fun registerAll(registry: ComponentRegistryProxy<EntityStore>) {
-        registerSystem(HomingMissileTickSystem::class, registry)
-    }
-}
-```
-
-</details>
 
 ---
 
@@ -194,139 +158,92 @@ object SystemRegistryGenerated {
 @RegisterInteraction("SimpleProjectileLaunchInteraction")
 @GenerateCodec
 open class SimpleProjectileLaunchInteraction : SimpleInstantInteraction() {
-
     companion object : CodecProvider<SimpleProjectileLaunchInteraction> {
-        override val CODEC: BuilderCodec<SimpleProjectileLaunchInteraction> = CodecBuilderSimpleProjectileLaunchInteraction
+        override val CODEC: BuilderCodec<SimpleProjectileLaunchInteraction> =
+            CodecBuilderSimpleProjectileLaunchInteraction
     }
 
-    @CodecProperty(documentation = "Projectile asset ID to launch")
+    @CodecProperty(documentation = "The projectile to launch.")
     @CodecRequiredValidator
-    @CodecProjectileValidator
     var projectileId: String = ""
+}
+```
 
-    override fun firstRun(type: InteractionType, context: InteractionContext, cooldownHandler: CooldownHandler) {
-        // your interaction logic
+---
+
+### Registering Event Listeners
+
+Listener functions must be inside a `companion object`. They can optionally accept the event as a parameter.
+
+**Global event listener** — fires regardless of which entity triggers the event:
+
+```kotlin
+class ExampleEventListener {
+    companion object {
+        @RegisterGlobalEvent(PlayerReadyEvent::class)
+        fun onPlayerReady(event: PlayerReadyEvent) {
+            HytaleLogger.getLogger().atInfo().log("Player is ready: " + event.player.gameMode.name)
+        }
     }
 }
 ```
 
-You can extend registered interactions and override behaviour — just annotate the subclass too:
+**Entity-scoped event listener** — fires only for the specified subject type:
 
 ```kotlin
-@RegisterInteraction("HomingMissileProjectileLaunchInteraction")
-@GenerateCodec
-class HomingMissileProjectileLaunchInteraction : SimpleProjectileLaunchInteraction() {
-
-    companion object : CodecProvider<HomingMissileProjectileLaunchInteraction> {
-        override val CODEC = CodecBuilderHomingMissileProjectileLaunchInteraction
-    }
-
-    @CodecProperty(documentation = "Homing projectile configuration")
-    var homingProjectileConfig: HomingProjectileDTO = HomingProjectileDTO()
-
-    override fun beforeProjectileSpawn(...) {
-        // attach homing component to the projectile
+class ExampleEventListener {
+    companion object {
+        @RegisterEvent(LoadedAssetsEvent::class, Item::class)
+        fun onItemsLoaded(event: LoadedAssetsEvent<String, Item, DefaultAssetMap<String, Item>>) {
+            val count = event.loadedAssets.count()
+            HytaleLogger.getLogger().atInfo().log("$count items loaded!")
+        }
     }
 }
 ```
-
-<details>
-<summary>📄 See generated output</summary>
-
-**`InteractionRegistryGenerated.kt`**
-```kotlin
-// Auto-generated by Aergia. Do not edit manually.
-object InteractionRegistryGenerated {
-    fun registerAll(registry: CodecMapRegistry.Assets<Interaction, *>) {
-        registerInteraction(SimpleProjectileLaunchInteraction::class, registry)
-        registerInteraction(HomingMissileProjectileLaunchInteraction::class, registry)
-    }
-}
-```
-
-**`SimpleProjectileLaunchInteractionCodec.kt`**
-```kotlin
-// Auto-generated by Aergia. Do not edit manually.
-val CodecBuilderSimpleProjectileLaunchInteraction: BuilderCodec<SimpleProjectileLaunchInteraction> =
-    BuilderCodec.builder(SimpleProjectileLaunchInteraction::class.java, ::SimpleProjectileLaunchInteraction)
-    .append(KeyedCodec("ProjectileId", Codec.STRING, true),
-        { config, value -> config.projectileId = value },
-        { config -> config.projectileId }
-    )
-    .documentation("Projectile asset ID to launch")
-    .addValidator(Validators.nonNull())
-    .addValidator(Projectile.VALIDATOR_CACHE.getValidator().late())
-    .add()
-    .build()
-```
-
-**`HomingMissileProjectileLaunchInteractionCodec.kt`** — inherits parent codec fields automatically
-```kotlin
-// Auto-generated by Aergia. Do not edit manually.
-val CodecBuilderHomingMissileProjectileLaunchInteraction: BuilderCodec<HomingMissileProjectileLaunchInteraction> =
-    BuilderCodec.builder(
-        HomingMissileProjectileLaunchInteraction::class.java,
-        ::HomingMissileProjectileLaunchInteraction,
-        SimpleProjectileLaunchInteraction.CODEC   // parent codec chained in automatically
-    )
-    .appendInherited(KeyedCodec("HomingProjectileConfig", HomingProjectileDTO.CODEC, true),
-        { config, value -> config.homingProjectileConfig = value },
-        { config -> config.homingProjectileConfig },
-        { target, parent -> target.homingProjectileConfig = parent.homingProjectileConfig }
-    )
-    .documentation("Homing projectile configuration")
-    .add()
-    .appendInherited(KeyedCodec("ProjectileId", Codec.STRING, true),
-        { config, value -> config.projectileId = value },
-        { config -> config.projectileId },
-        { target, parent -> target.projectileId = parent.projectileId }
-    )
-    .documentation("Projectile asset ID to launch")
-    .addValidator(Validators.nonNull())
-    .addValidator(Projectile.VALIDATOR_CACHE.getValidator().late())
-    .add()
-    .build()
-```
-
-</details>
 
 ---
 
 ### Generating a Codec
 
-Use `@GenerateCodec` on any class and annotate each field or constructor parameter with `@CodecProperty`.
-Aergia generates a `CodecBuilderYourClassName` object that handles serialization and deserialization.
+Use `@GenerateCodec` on any class and annotate each field with `@CodecProperty`. Fields must be mutable (`var`). The codec key is derived from the property name with the first letter uppercased (`homingRange` → `"HomingRange"`).
 
 ```kotlin
 @GenerateCodec
-open class HomingProjectileDTO(
-    @param:CodecProperty(required = true, defaultValue = "true",  documentation = "Enable/disable homing")
-    var isEnabled: Boolean = true,
+class HomingProjectileComponent : Component<EntityStore> {
+    @CodecProperty(documentation = "Enable/Disable Homing Feature")
+    var isEnabled = false
 
-    @param:CodecProperty(required = true, defaultValue = "40.0",  documentation = "Max lock-on range")
-    var homingRange: Float = 40.0f,
+    @CodecProperty(documentation = "Maximum distance to search for valid targets when locking on.")
+    var homingRange = 0.0
 
-    @param:CodecProperty(required = true, defaultValue = "280.0", documentation = "Turn rate in degrees/tick")
-    var turnRateDegreesPerTick: Double = 280.0,
+    @CodecProperty(documentation = "The projectile to spawn.", required = false)
+    var projectileId: String = ""
 
-    @param:CodecProperty(required = true, defaultValue = "8.0",   documentation = "Lock-on cone half-angle")
-    var lockConeAngleDegrees: Double = 8.0,
-
-    @param:CodecProperty(required = true, defaultValue = "5.0",   documentation = "Direct-chase trigger distance")
-    var chaseRange: Double = 5.0,
-
-    @param:CodecProperty(required = true, defaultValue = "10.0",  documentation = "Speed bonus in chase zone")
-    var chaseSpeedBonus: Double = 10.0
-) {
-    companion object : CodecProvider<HomingProjectileDTO> {
-        override val CODEC: BuilderCodec<HomingProjectileDTO> = CodecBuilderHomingProjectileDTO
+    companion object : CodecProvider<HomingProjectileComponent>, ComponentTypeProvider<HomingProjectileComponent> {
+        override var componentType: ComponentType<EntityStore, HomingProjectileComponent>? = null
+        override val CODEC: BuilderCodec<HomingProjectileComponent> =
+            CodecBuilderHomingProjectileComponent
     }
 }
 ```
 
+**Supported primitive types:**
+
+| Kotlin type | Codec |
+|---|---|
+| `String` | `Codec.STRING` |
+| `Int` | `Codec.INT` |
+| `Boolean` | `Codec.BOOLEAN` |
+| `Float` | `Codec.FLOAT` |
+| `Double` | `Codec.DOUBLE` |
+| `Long` | `Codec.LONG` |
+
+For any other type, the processor assumes the type has a `CODEC` companion property (e.g. `HomingProjectileDTO.CODEC`).
+
 ### Codec Validators
 
-Add validators to `@CodecProperty` fields to have Aergia wire validation logic into the generated codec automatically.
+Stack validator annotations on the same field as `@CodecProperty`:
 
 | Annotation | What it generates |
 |---|---|
@@ -334,63 +251,37 @@ Add validators to `@CodecProperty` fields to have Aergia wire validation logic i
 | `@CodecProjectileValidator` | Validates the value against the Hytale projectile asset registry |
 
 ```kotlin
-@CodecProperty(documentation = "Projectile asset ID")
+@CodecProperty(documentation = "The projectile to spawn.")
 @CodecRequiredValidator
-@CodecProjectileValidator
 var projectileId: String = ""
 ```
 
-> More validators will be added as development of the plugin progresses. 🚧
+---
+
+### Disabling registration
+
+Pass `enabled = false` to any registry annotation to skip registration without removing the code. The runtime logs a warning instead.
+
+```kotlin
+@RegisterComponent("HomingProjectileComponent", enabled = false)
+@GenerateCodec
+class HomingProjectileComponent : Component<EntityStore> { ... }
+
+@RegisterSystem(enabled = false)
+class HomingMissileTickSystem : EntityTickingSystem<EntityStore>() { ... }
+
+@RegisterGlobalEvent(PlayerReadyEvent::class, enabled = false)
+fun onPlayerReady(event: PlayerReadyEvent) { ... }
+```
 
 ---
 
-To temporarily disable registration without removing an annotation, use the `enabled` flag:
+## Documentation
 
-```kotlin
-@RegisterComponent("MyComponent", enabled = false)
-class MyComponent : Component<EntityStore> { ... }
-```
-
-<details>
-<summary>📄 See generated output</summary>
-
-**`HomingProjectileDTOCodec.kt`**
-```kotlin
-// Auto-generated by Aergia. Do not edit manually.
-val CodecBuilderHomingProjectileDTO: BuilderCodec<HomingProjectileDTO> =
-    BuilderCodec.builder(HomingProjectileDTO::class.java, ::HomingProjectileDTO)
-    .append(KeyedCodec("IsEnabled", Codec.BOOLEAN, true),
-        { config, value -> config.isEnabled = value },
-        { config -> config.isEnabled }
-    )
-    .documentation("Enable/Disable Homing Feature")
-    .add()
-    .append(KeyedCodec("HomingRange", Codec.FLOAT, true),
-        { config, value -> config.homingRange = value },
-        { config -> config.homingRange }
-    )
-    .documentation("Maximum distance to search for valid targets when locking on.")
-    .add()
-    .append(KeyedCodec("TurnRateDegreesPerTick", Codec.DOUBLE, true),
-        { config, value -> config.turnRateDegreesPerTick = value },
-        { config -> config.turnRateDegreesPerTick }
-    )
-    .documentation("How quickly the projectile can turn toward its target each tick, in degrees.")
-    .add()
-    // ... one entry per @CodecProperty field
-    .build()
-```
-
-</details>
-
----
-
-## 📖 Documentation
-
-Full documentation with advanced usage and all annotation options is **coming soon**.
+Full documentation is available at **[dawidprosba.github.io/hytale-aergia-mod-devkit/latest/](https://dawidprosba.github.io/hytale-aergia-mod-devkit/latest/)**.
 
 ---
 
 <div align="center">
-  <sub>Built with ☕ and the divine laziness of Aergia.</sub>
+  <sub>Built with coffee and the divine laziness of Aergia.</sub>
 </div>
