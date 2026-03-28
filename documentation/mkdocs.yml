@@ -62,6 +62,13 @@ markdown_extensions:
   - md_in_html
   - tables
   - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - macros
 
 extra:
   server_version: "2026.03.26-89796e57b"
@@ -69,6 +76,8 @@ extra:
     provider: mike
 
 nav:
-  - Home: index.md
+  - Home:
+    - index.md
+    - Getting Started: home/getting-started.md
   - Guides:
-    - Converting Java Plugin to Kotlin: java-to-kotlin.md
+    - Converting Java Plugin to Kotlin: guides/java-to-kotlin.md

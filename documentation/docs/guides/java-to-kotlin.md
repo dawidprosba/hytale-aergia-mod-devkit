@@ -306,3 +306,7 @@ After you run server you should look for `Hello from ExamplePlugin version 0.1.0
     
     rootProject.name = "ExamplePlugin"
     ```
+
+---
+
+[Next: Getting Started →](../home/getting-started.md){ .md-button .md-button--primary }
