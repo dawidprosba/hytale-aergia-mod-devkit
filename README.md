@@ -65,8 +65,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.1")
-    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.1")
+    implementation("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.2")
+    ksp("io.github.dawidprosba:hytale-aergia-mod-devkit:0.0.2")
 }
 
 ksp {
