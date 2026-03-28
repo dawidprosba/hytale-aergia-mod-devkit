@@ -1,6 +1,6 @@
 # Interaction Registry
 
-The interaction registry lets you register custom interactions.
+Use `@RegisterInteraction` and `@GenerateCodec`.
 
 # How to register an interaction
 

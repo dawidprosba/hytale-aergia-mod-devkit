@@ -1,6 +1,6 @@
 # Event Registry
 
-Registers all events in the project.
+Use `@RegisterEvent`.
 
 # How to register an event listener
 

@@ -1,6 +1,6 @@
 # Component Registry
 
-Registers all components in the project.
+Use `@RegisterComponent` and `@GenerateCodec`.
 
 # How to register a component
 

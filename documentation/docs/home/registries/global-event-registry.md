@@ -1,6 +1,6 @@
 # Global Event Registry
 
-Registers all global events in the project.
+Use `@RegisterGlobalEvent`.
 
 # How to register a global event listener
 
