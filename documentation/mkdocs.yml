@@ -86,5 +86,19 @@ nav:
        - Global Event Registry: home/registries/global-event-registry.md
        - Interaction Registry: home/registries/interaction-registry.md
        - System Registry: home/registries/system-registry.md
+  - Annotations:
+    - annotations/index.md
+    - Codec:
+      - "@GenerateCodec": annotations/generate-codec.md
+      - "@CodecProperty": annotations/codec-property.md
+      - Validators:
+        - "@CodecRequiredValidator": annotations/codec-required-validator.md
+        - "@CodecProjectileValidator": annotations/codec-projectile-validator.md
+    - Registry:
+      - "@RegisterComponent": annotations/register-component.md
+      - "@RegisterInteraction": annotations/register-interaction.md
+      - "@RegisterSystem": annotations/register-system.md
+      - "@RegisterGlobalEvent": annotations/register-global-event.md
+      - "@RegisterEvent": annotations/register-event.md
   - Guides:
     - Converting Java Plugin to Kotlin: guides/java-to-kotlin.md
