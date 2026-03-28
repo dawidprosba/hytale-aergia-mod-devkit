@@ -83,5 +83,6 @@ nav:
     - Registries:
        - Component Registry: home/registries/component-registry.md
        - Event Registry: home/registries/event-registry.md
+       - Global Event Registry: home/registries/global-event-registry.md
   - Guides:
     - Converting Java Plugin to Kotlin: guides/java-to-kotlin.md

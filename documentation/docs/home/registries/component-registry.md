@@ -1,6 +1,6 @@
 # Component Registry
 
-The component registry is how you make custom components available to the entity system. Components must be registered before they can be attached to entities or serialized.
+Registers all components in the project.
 
 # How to register a component
 

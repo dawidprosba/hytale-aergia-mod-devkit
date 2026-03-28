@@ -1,6 +1,6 @@
 # Event Registry
 
-The event registry lets you listen to game events.
+Registers all events in the project.
 
 # How to register an event listener
 
