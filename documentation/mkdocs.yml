@@ -72,6 +72,7 @@ plugins:
 
 extra:
   server_version: "2026.03.26-89796e57b"
+  devkit_version: "0.0.2"
   version:
     provider: mike
 
@@ -79,5 +80,7 @@ nav:
   - Home:
     - index.md
     - Getting Started: home/getting-started.md
+    - Registries:
+       - Component Registry: home/registries/component-registry.md
   - Guides:
     - Converting Java Plugin to Kotlin: guides/java-to-kotlin.md

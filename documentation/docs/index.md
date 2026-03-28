@@ -233,7 +233,7 @@ class ExamplePlugin(init: JavaPluginInit) : JavaPlugin(init) {
 }
 ```
 
-1. You need to provide ComponentTypeProvider<HomingProjectileComponent> in your component companion object (So it can be set during component registration). The compiler will let you know during compile time if you forget!
+1. Just need to add call to the generated registry.
 
 !!! abstract "Generated Registry"
     This is how the registry will look like after the registration. If you disable component registration, It'll convert into LOG block and will print information to console.
