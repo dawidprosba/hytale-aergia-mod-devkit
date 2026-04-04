@@ -7,6 +7,7 @@ import com.google.devtools.ksp.symbol.KSFile
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.providers.CodecRegistrationService
+import java.io.IOException
 
 private val BUILDER_CODEC_TYPE = ClassName("com.hypixel.hytale.codec.builder", "BuilderCodec")
 private val CODEC_REGISTRATION_SERVICE_TYPE = ClassName(
@@ -33,13 +34,18 @@ class CodecRegistryGenerator(
             .addType(buildRegistryClass())
             .build()
 
-        codeGenerator.createNewFile(
-            dependencies = Dependencies(true, *sourceFiles),
-            packageName = outputPackage,
-            fileName = objectName,
-        ).use { stream ->
-            stream.writer().use { fileSpec.writeTo(it) }
+        try {
+            codeGenerator.createNewFile(
+                dependencies = Dependencies(true, *sourceFiles),
+                packageName = outputPackage,
+                fileName = objectName,
+            ).use { stream ->
+                stream.writer().use { fileSpec.writeTo(it) }
+            }
+        } catch (e: FileAlreadyExistsException) {
+            // Let's hope this doesn't bite me in the ass later :D
         }
+
     }
 
     private fun generateServiceLoaderFile() {

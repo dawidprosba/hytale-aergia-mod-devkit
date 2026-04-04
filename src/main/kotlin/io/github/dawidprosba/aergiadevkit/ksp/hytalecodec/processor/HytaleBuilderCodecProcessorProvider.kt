@@ -6,6 +6,6 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 class HytaleBuilderCodecProcessorProvider : SymbolProcessorProvider{
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return HytaleBuilderCodecPrrocessor(environment)
+        return HytaleBuilderCodecProcessor(environment)
     }
 }

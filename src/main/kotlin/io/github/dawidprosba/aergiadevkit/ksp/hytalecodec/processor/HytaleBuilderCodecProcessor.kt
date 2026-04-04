@@ -13,7 +13,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import io.github.dawidprosba.aergiadevkit.ksp.extensions.findClassesWithAnnotation
 import io.github.dawidprosba.aergiadevkit.ksp.extensions.findPropertiesWithAnnotation
 
-class HytaleBuilderCodecPrrocessor(
+class HytaleBuilderCodecProcessor(
     private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
     private val processedClasses = mutableSetOf<String>()
