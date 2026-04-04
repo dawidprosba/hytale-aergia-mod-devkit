@@ -2,7 +2,6 @@ package io.github.dawidprosba.aergiadevkit.api.registries
 
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.api.CodecProvider
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.HytaleComponent
-import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSystem
 import com.hypixel.hytale.component.Component
@@ -16,7 +15,6 @@ import com.hypixel.hytale.logger.HytaleLogger
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction
 import com.hypixel.hytale.server.core.plugin.registry.CodecMapRegistry
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore
-import io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers.ComponentTypeProvider
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.createInstance
@@ -29,20 +27,17 @@ private val LOGGER = HytaleLogger.get(InteractionRegistrationHelperLogger::class
 
 
 fun <T : Interaction> registerInteraction(
-    kClass: KClass<T>,
-    registry: CodecMapRegistry.Assets<Interaction, *>
+    kClass: KClass<T>, registry: CodecMapRegistry.Assets<Interaction, *>
 ) {
     val annotation = kClass.findAnnotation<RegisterInteraction>()
         ?: error("${kClass.simpleName} is missing @RegisterInteraction annotation")
 
-    @Suppress("UNCHECKED_CAST")
-    val companion = kClass.companionObjectInstance as? CodecProvider<T>
+    @Suppress("UNCHECKED_CAST") val companion = kClass.companionObjectInstance as? CodecProvider<T>
         ?: error("${kClass.simpleName} companion must implement CodecProvider")
 
     if (!annotation.enabled) {
         LOGGER.atWarning().log(
-            "Registration for interaction %s is disabled. Skipping registration.",
-            annotation.id
+            "Registration for interaction %s is disabled. Skipping registration.", annotation.id
         )
         return
     }
@@ -54,48 +49,37 @@ fun <T : Interaction> registerInteraction(
 
 
 fun <T : Component<EntityStore>> registerComponent(
-    kClass: KClass<T>,
-    registry: ComponentRegistryProxy<EntityStore>
+    kClass: KClass<T>, registry: ComponentRegistryProxy<EntityStore>
 ): ComponentType<EntityStore, T> {
-    val hytaleAnnotation = kClass.findAnnotation<HytaleComponent>()
-    @Suppress("DEPRECATION")
-    val legacyAnnotation = kClass.findAnnotation<RegisterComponent>()
-
-    val id = hytaleAnnotation?.id ?: legacyAnnotation?.id
-        ?: error("${kClass.simpleName} is missing @HytaleComponent annotation")
-    val enabled = hytaleAnnotation?.enabled ?: legacyAnnotation?.enabled ?: true
+    val hytaleAnnotation = kClass.findAnnotation<HytaleComponent>() ?: error(
+        "${kClass.simpleName} is missing @HytaleComponent annotation."
+    )
+    val enabled = hytaleAnnotation.enabled
+    val componentId = hytaleAnnotation.id
 
     if (!enabled) {
         error("Cannot register disabled component: ${kClass.qualifiedName}")
     }
 
-    @Suppress("UNCHECKED_CAST")
-    val codec = CodecRegistry.getCodec(kClass.java)
-        ?: (kClass.companionObjectInstance as? CodecProvider<T>)?.CODEC
-        ?: error("No codec found for ${kClass.simpleName}. Annotate with @GenerateCodec or implement CodecProvider in companion.")
+    val codec = AergiaCodecBuilderRegistry.getCodec(kClass.java)
 
-    LOGGER.atInfo().log("Registering component: %s", id)
+    LOGGER.atInfo().log("Registering component: %s", componentId)
 
-    val registeredComponent: ComponentType<EntityStore, T> =
-        registry.registerComponent(kClass.java, id, codec)
-
-    @Suppress("UNCHECKED_CAST")
-    (kClass.companionObjectInstance as? ComponentTypeProvider<T>)?.componentType = registeredComponent
-
-    return registeredComponent
+    val registeredComponentType: ComponentType<EntityStore, T> =
+        registry.registerComponent(kClass.java, componentId, codec)
+    
+    return registeredComponentType
 }
 
 fun <T : ISystem<EntityStore>> registerSystem(
-    kClass : KClass<T>,
-    registry: ComponentRegistryProxy<EntityStore>
+    kClass: KClass<T>, registry: ComponentRegistryProxy<EntityStore>
 ) {
     val annotation = kClass.findAnnotation<RegisterSystem>()
         ?: error("${kClass.simpleName} is missing @RegisterSystem annotation")
 
     if (!annotation.enabled) {
         LOGGER.atWarning().log(
-            "Registration for component %s is disabled. Skipping registration.",
-            kClass.simpleName
+            "Registration for component %s is disabled. Skipping registration.", kClass.simpleName
         )
         return
     }
@@ -111,13 +95,11 @@ fun <T : ISystem<EntityStore>> registerSystem(
             "${kClass.simpleName} must be a Kotlin object or provide a public no-arg constructor to be auto-registered"
         }
 
-        runCatching { kClass.createInstance() }
-            .getOrElse { cause ->
-                throw IllegalStateException(
-                    "Failed to instantiate auto-registered system ${kClass.qualifiedName}",
-                    cause
-                )
-            }
+        runCatching { kClass.createInstance() }.getOrElse { cause ->
+            throw IllegalStateException(
+                "Failed to instantiate auto-registered system ${kClass.qualifiedName}", cause
+            )
+        }
     }
 
     registry.registerSystem(system)
@@ -126,13 +108,13 @@ fun <T : ISystem<EntityStore>> registerSystem(
 
 @Suppress("UNCHECKED_CAST")
 fun registerGlobalEvent(
-    eventClass: KClass<*>,
-    handler: Consumer<*>,
-    registry: EventRegistry,
-    functionName: String
+    eventClass: KClass<*>, handler: Consumer<*>, registry: EventRegistry, functionName: String
 ) {
-    LOGGER.atInfo().log("Registering global event listener for: %s -> %s", eventClass.simpleName, functionName)
-    registry.registerGlobal(eventClass.java as Class<IBaseEvent<Any>>, handler as Consumer<IBaseEvent<Any>>)
+    LOGGER.atInfo()
+        .log("Registering global event listener for: %s -> %s", eventClass.simpleName, functionName)
+    registry.registerGlobal(
+        eventClass.java as Class<IBaseEvent<Any>>, handler as Consumer<IBaseEvent<Any>>
+    )
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -143,6 +125,10 @@ fun registerEvent(
     registry: EventRegistry,
     functionName: String
 ) {
-    LOGGER.atInfo().log("Registering event listener for: %s[%s] -> %s", eventClass.simpleName, key, functionName)
-    registry.register(eventClass.java as Class<IBaseEvent<Any>>, key, handler as Consumer<IBaseEvent<Any>>)
+    LOGGER.atInfo().log(
+        "Registering event listener for: %s[%s] -> %s", eventClass.simpleName, key, functionName
+    )
+    registry.register(
+        eventClass.java as Class<IBaseEvent<Any>>, key, handler as Consumer<IBaseEvent<Any>>
+    )
 }
