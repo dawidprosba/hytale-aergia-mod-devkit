@@ -158,6 +158,11 @@ class RegistryGenerationTest {
         assertContains(generatedContent("CodecRegistryGenerated"), "CodecBuilderSimpleEntity")
     }
 
+    @Test
+    fun `codec registry registers HytaleComponent codec without explicit GenerateCodec`() {
+        assertContains(generatedContent("CodecRegistryGenerated"), "CodecBuilderTestComponent")
+    }
+
     // --- GlobalEventRegistryGenerated ---
 
     @Test

@@ -4,6 +4,7 @@ import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.CodecPrope
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.GenerateCodec
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor.generators.CodecFileGenerator
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor.generators.CodecRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.HytaleComponent
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -18,11 +19,21 @@ class HytaleBuilderCodecPrrocessor(
     private val processedClasses = mutableSetOf<String>()
     private val collectedClassDeclarations = mutableListOf<KSClassDeclaration>()
     private val generateCodecAnnotationName = GenerateCodec::class.qualifiedName!!
+    private val hytaleComponentAnnotationName = HytaleComponent::class.qualifiedName!!
+    private val codecPropertySimpleName = CodecProperty::class.simpleName!!
     private val outputPackage = environment.options["registriesOutputPackage"]
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver.findClassesWithAnnotation(generateCodecAnnotationName)
             .filterNot { it.qualifiedName?.asString() in processedClasses }
+            .forEach { classDeclaration ->
+                processClass(classDeclaration)
+                collectedClassDeclarations.add(classDeclaration)
+            }
+
+        resolver.findClassesWithAnnotation(hytaleComponentAnnotationName)
+            .filterNot { it.qualifiedName?.asString() in processedClasses }
+            .filter { it.findPropertiesWithAnnotation(codecPropertySimpleName).isNotEmpty() }
             .forEach { classDeclaration ->
                 processClass(classDeclaration)
                 collectedClassDeclarations.add(classDeclaration)
