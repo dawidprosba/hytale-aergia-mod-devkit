@@ -27,6 +27,18 @@ class RegistryGenerationTest {
     }
 
     @Test
+    fun `component registry implements ComponentRegistrationService`() {
+        assertContains(generatedContent("ComponentRegistryGenerated"), "ComponentRegistrationService")
+    }
+
+    @Test
+    fun `component registry registerAll returns result map`() {
+        val content = generatedContent("ComponentRegistryGenerated")
+        assertContains(content, "val result = mutableMapOf<")
+        assertContains(content, "return result")
+    }
+
+    @Test
     fun `component registry includes enabled component`() {
         assertContains(generatedContent("ComponentRegistryGenerated"), "registerComponent(TestComponent::class, registry)")
     }

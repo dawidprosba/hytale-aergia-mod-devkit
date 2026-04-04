@@ -17,25 +17,32 @@ internal val ENTITY_STORE_TYPE =
 
 internal val EVENT_REGISTRY_TYPE = ClassName("com.hypixel.hytale.event", "EventRegistry")
 
+internal val COMPONENT_CLASS = ClassName("com.hypixel.hytale.component", "Component")
+internal val COMPONENT_TYPE_CLASS = ClassName("com.hypixel.hytale.component", "ComponentType")
+internal val COMPONENT_REGISTRATION_SERVICE_TYPE = ClassName(
+    "io.github.dawidprosba.aergiadevkit.ksp.registry.providers",
+    "ComponentRegistrationService"
+)
+
 internal val REGISTER_GLOBAL_EVENT = MemberName(
-    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "io.github.dawidprosba.aergiadevkit.api.registries",
     "registerGlobalEvent"
 )
 
 internal val REGISTER_EVENT = MemberName(
-    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "io.github.dawidprosba.aergiadevkit.api.registries",
     "registerEvent"
 )
 
 internal val REGISTER_INTERACTION = MemberName(
-    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "io.github.dawidprosba.aergiadevkit.api.registries",
     "registerInteraction"
 )
 internal val REGISTER_COMPONENT = MemberName(
-    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "io.github.dawidprosba.aergiadevkit.api.registries",
     "registerComponent"
 )
 internal val REGISTER_SYSTEM = MemberName(
-    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "io.github.dawidprosba.aergiadevkit.api.registries",
     "registerSystem"
 )

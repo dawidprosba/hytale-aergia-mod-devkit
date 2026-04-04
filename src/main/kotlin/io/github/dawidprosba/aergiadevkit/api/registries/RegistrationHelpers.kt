@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers
+package io.github.dawidprosba.aergiadevkit.api.registries
 
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.api.CodecProvider
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
@@ -15,6 +15,7 @@ import com.hypixel.hytale.logger.HytaleLogger
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction
 import com.hypixel.hytale.server.core.plugin.registry.CodecMapRegistry
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore
+import io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers.ComponentTypeProvider
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.full.createInstance
@@ -54,34 +55,27 @@ fun <T : Interaction> registerInteraction(
 fun <T : Component<EntityStore>> registerComponent(
     kClass: KClass<T>,
     registry: ComponentRegistryProxy<EntityStore>
-) {
+): ComponentType<EntityStore, T> {
     val annotation = kClass.findAnnotation<RegisterComponent>()
         ?: error("${kClass.simpleName} is missing @RegisterComponent annotation")
 
     if (!annotation.enabled) {
-        LOGGER.atWarning().log(
-            "Registration for component %s is disabled. Skipping registration.",
-            annotation.id
-        )
-        return
+        error("Cannot register disabled component: ${kClass.qualifiedName}")
     }
 
     @Suppress("UNCHECKED_CAST")
     val codec = (kClass.companionObjectInstance as? CodecProvider<T>)?.CODEC
         ?: error("${kClass.simpleName} companion must implement CodecProvider")
 
-    if((kClass.companionObjectInstance is ComponentTypeProvider<*>)) {
+    if (kClass.companionObjectInstance is ComponentTypeProvider<*>) {
         LOGGER.atInfo().log("Registering component: %s", annotation.id)
 
         val registeredComponent: ComponentType<EntityStore, T> =
-            registry.registerComponent(
-                kClass.java,
-                annotation.id,
-                codec
-            )
+            registry.registerComponent(kClass.java, annotation.id, codec)
 
         @Suppress("UNCHECKED_CAST")
         (kClass.companionObjectInstance as ComponentTypeProvider<T>).componentType = registeredComponent
+        return registeredComponent
     } else {
         error("${kClass.simpleName} companion must implement ComponentTypeProvider")
     }
