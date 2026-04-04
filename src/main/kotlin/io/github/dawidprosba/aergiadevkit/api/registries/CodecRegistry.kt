@@ -4,11 +4,10 @@ import com.hypixel.hytale.codec.builder.BuilderCodec
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.InjectCodec
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.providers.CodecRegistrationService
 import java.util.ServiceLoader
-import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
+import kotlin.reflect.jvm.javaField
 
 object CodecRegistry {
     private val codecs: Map<Class<*>, BuilderCodec<*>> by lazy {
@@ -22,16 +21,15 @@ object CodecRegistry {
         result
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun populateLateInitCodec(clazz: Class<*>, codec: BuilderCodec<*>) {
         val companionInstance = clazz.kotlin.companionObjectInstance ?: return
 
         companionInstance::class.memberProperties
-            .filterIsInstance<KMutableProperty1<Any, Any>>()
             .filter { it.findAnnotation<InjectCodec>() != null }
             .forEach { property ->
-                property.isAccessible = true
-                property.set(companionInstance, codec)
+                val backingField = property.javaField ?: return@forEach
+                backingField.isAccessible = true
+                backingField.set(companionInstance, codec)
             }
     }
 
