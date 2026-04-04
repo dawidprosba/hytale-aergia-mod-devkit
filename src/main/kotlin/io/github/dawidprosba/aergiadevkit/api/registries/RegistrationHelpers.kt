@@ -70,8 +70,9 @@ fun <T : Component<EntityStore>> registerComponent(
     }
 
     @Suppress("UNCHECKED_CAST")
-    val codec = (kClass.companionObjectInstance as? CodecProvider<T>)?.CODEC
-        ?: error("${kClass.simpleName} companion must implement CodecProvider")
+    val codec = CodecRegistry.getCodec(kClass.java)
+        ?: (kClass.companionObjectInstance as? CodecProvider<T>)?.CODEC
+        ?: error("No codec found for ${kClass.simpleName}. Annotate with @GenerateCodec or implement CodecProvider in companion.")
 
     if (kClass.companionObjectInstance is ComponentTypeProvider<*>) {
         LOGGER.atInfo().log("Registering component: %s", id)

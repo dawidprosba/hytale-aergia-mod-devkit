@@ -3,6 +3,7 @@ package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.CodecProperty
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.GenerateCodec
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor.generators.CodecFileGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor.generators.CodecRegistryGenerator
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -15,16 +16,34 @@ class HytaleBuilderCodecPrrocessor(
     private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
     private val processedClasses = mutableSetOf<String>()
+    private val collectedClassDeclarations = mutableListOf<KSClassDeclaration>()
     private val generateCodecAnnotationName = GenerateCodec::class.qualifiedName!!
+    private val outputPackage = environment.options["registriesOutputPackage"]
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         resolver.findClassesWithAnnotation(generateCodecAnnotationName)
             .filterNot { it.qualifiedName?.asString() in processedClasses }
             .forEach { classDeclaration ->
                 processClass(classDeclaration)
+                collectedClassDeclarations.add(classDeclaration)
             }
 
         return emptyList()
+    }
+
+    override fun finish() {
+        val outputPackage = outputPackage ?: return
+
+        val sourceFiles = collectedClassDeclarations
+            .mapNotNull { it.containingFile }
+            .toTypedArray()
+
+        CodecRegistryGenerator(
+            outputPackage = outputPackage,
+            classDeclarations = collectedClassDeclarations,
+            sourceFiles = sourceFiles,
+            codeGenerator = environment.codeGenerator,
+        ).generate()
     }
 
     private fun processClass(classDeclaration: KSClassDeclaration) {

@@ -131,6 +131,33 @@ class RegistryGenerationTest {
         )
     }
 
+    // --- CodecRegistryGenerated ---
+
+    @Test
+    fun `generates CodecRegistryGenerated file`() {
+        assertTrue(
+            generatedSourcesDir.resolve("test/generated/CodecRegistryGenerated.kt").exists(),
+            "CodecRegistryGenerated.kt was not generated"
+        )
+    }
+
+    @Test
+    fun `codec registry implements CodecRegistrationService`() {
+        assertContains(generatedContent("CodecRegistryGenerated"), "CodecRegistrationService")
+    }
+
+    @Test
+    fun `codec registry registerAll returns result map`() {
+        val content = generatedContent("CodecRegistryGenerated")
+        assertContains(content, "val result = mutableMapOf<")
+        assertContains(content, "return result")
+    }
+
+    @Test
+    fun `codec registry registers SimpleEntity codec`() {
+        assertContains(generatedContent("CodecRegistryGenerated"), "CodecBuilderSimpleEntity")
+    }
+
     // --- GlobalEventRegistryGenerated ---
 
     @Test

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.github.dawidprosba"
-val baseVersion = "0.0.2"
+val baseVersion = "0.0.3"
 version = if (providers.gradleProperty("local").isPresent) "$baseVersion-SNAPSHOT" else baseVersion
 
 repositories {
