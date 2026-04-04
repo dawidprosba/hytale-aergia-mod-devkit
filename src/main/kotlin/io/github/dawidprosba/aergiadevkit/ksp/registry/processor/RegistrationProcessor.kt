@@ -9,6 +9,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.HytaleComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterEvent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterGlobalEvent
@@ -28,6 +29,7 @@ class RegistrationProcessor(
 ) : SymbolProcessor {
     private val interactionAnnotation = RegisterInteraction::class.qualifiedName!!
     private val componentAnnotation = RegisterComponent::class.qualifiedName!!
+    private val hytaleComponentAnnotation = HytaleComponent::class.qualifiedName!!
     private val systemAnnotation = RegisterSystem::class.qualifiedName!!
     private val globalEventAnnotation = RegisterGlobalEvent::class.qualifiedName!!
     private val eventAnnotation = RegisterEvent::class.qualifiedName!!
@@ -76,6 +78,8 @@ class RegistrationProcessor(
                 }
             }
         }
+
+        deferredSymbols += processComponentClasses(resolver, hytaleComponentAnnotation)
 
         deferredSymbols += processEventFunctions(
             resolver,
@@ -157,6 +161,26 @@ class RegistrationProcessor(
             sourceFiles = eventSourceFiles.toTypedArray(),
             codeGenerator = codeGenerator,
         ).generate()
+    }
+
+    private fun processComponentClasses(resolver: Resolver, annotationQualifiedName: String): List<KSAnnotated> {
+        val symbols = resolver.getSymbolsWithAnnotation(annotationQualifiedName)
+            .filterIsInstance<KSClassDeclaration>()
+            .toList()
+
+        symbols.filter { it.validate() }.forEach { declaration ->
+            val qualifiedName = declaration.qualifiedNameString()
+            val arguments = declaration.annotationArguments(annotationQualifiedName)
+            val isEnabled = arguments.getOrDefault("enabled", true) as Boolean
+
+            collectedEntriesByAnnotation.getValue(componentAnnotation)[qualifiedName] =
+                RegistryEntryMetadata(qualifiedName, isEnabled)
+            declaration.containingFile?.let {
+                sourceFilesByAnnotation.getValue(componentAnnotation).add(it)
+            }
+        }
+
+        return symbols.filterNot { it.validate() }
     }
 
     private fun processEventFunctions(

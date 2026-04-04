@@ -1,6 +1,7 @@
 package io.github.dawidprosba.aergiadevkit.api.registries
 
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.api.CodecProvider
+import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.HytaleComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSystem
@@ -56,10 +57,15 @@ fun <T : Component<EntityStore>> registerComponent(
     kClass: KClass<T>,
     registry: ComponentRegistryProxy<EntityStore>
 ): ComponentType<EntityStore, T> {
-    val annotation = kClass.findAnnotation<RegisterComponent>()
-        ?: error("${kClass.simpleName} is missing @RegisterComponent annotation")
+    val hytaleAnnotation = kClass.findAnnotation<HytaleComponent>()
+    @Suppress("DEPRECATION")
+    val legacyAnnotation = kClass.findAnnotation<RegisterComponent>()
 
-    if (!annotation.enabled) {
+    val id = hytaleAnnotation?.id ?: legacyAnnotation?.id
+        ?: error("${kClass.simpleName} is missing @HytaleComponent annotation")
+    val enabled = hytaleAnnotation?.enabled ?: legacyAnnotation?.enabled ?: true
+
+    if (!enabled) {
         error("Cannot register disabled component: ${kClass.qualifiedName}")
     }
 
@@ -68,10 +74,10 @@ fun <T : Component<EntityStore>> registerComponent(
         ?: error("${kClass.simpleName} companion must implement CodecProvider")
 
     if (kClass.companionObjectInstance is ComponentTypeProvider<*>) {
-        LOGGER.atInfo().log("Registering component: %s", annotation.id)
+        LOGGER.atInfo().log("Registering component: %s", id)
 
         val registeredComponent: ComponentType<EntityStore, T> =
-            registry.registerComponent(kClass.java, annotation.id, codec)
+            registry.registerComponent(kClass.java, id, codec)
 
         @Suppress("UNCHECKED_CAST")
         (kClass.companionObjectInstance as ComponentTypeProvider<T>).componentType = registeredComponent

@@ -39,8 +39,13 @@ class RegistryGenerationTest {
     }
 
     @Test
-    fun `component registry includes enabled component`() {
+    fun `component registry includes HytaleComponent-annotated component`() {
         assertContains(generatedContent("ComponentRegistryGenerated"), "registerComponent(TestComponent::class, registry)")
+    }
+
+    @Test
+    fun `component registry includes legacy RegisterComponent-annotated component`() {
+        assertContains(generatedContent("ComponentRegistryGenerated"), "registerComponent(LegacyComponent::class, registry)")
     }
 
     @Test
