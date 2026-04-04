@@ -23,6 +23,13 @@ dependencies {
     testCompileOnly(files(providers.gradleProperty("hytale.serverJar").get()))
 }
 
+// KSP does not clean up META-INF/services files between incremental builds,
+// so the same file appears twice when processResources runs. EXCLUDE keeps
+// the first copy (from the previous KSP run) which is identical anyway.
+tasks.withType<ProcessResources> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 tasks.test {
     useJUnitPlatform()
     filter {

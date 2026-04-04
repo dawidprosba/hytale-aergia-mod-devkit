@@ -74,18 +74,15 @@ fun <T : Component<EntityStore>> registerComponent(
         ?: (kClass.companionObjectInstance as? CodecProvider<T>)?.CODEC
         ?: error("No codec found for ${kClass.simpleName}. Annotate with @GenerateCodec or implement CodecProvider in companion.")
 
-    if (kClass.companionObjectInstance is ComponentTypeProvider<*>) {
-        LOGGER.atInfo().log("Registering component: %s", id)
+    LOGGER.atInfo().log("Registering component: %s", id)
 
-        val registeredComponent: ComponentType<EntityStore, T> =
-            registry.registerComponent(kClass.java, id, codec)
+    val registeredComponent: ComponentType<EntityStore, T> =
+        registry.registerComponent(kClass.java, id, codec)
 
-        @Suppress("UNCHECKED_CAST")
-        (kClass.companionObjectInstance as ComponentTypeProvider<T>).componentType = registeredComponent
-        return registeredComponent
-    } else {
-        error("${kClass.simpleName} companion must implement ComponentTypeProvider")
-    }
+    @Suppress("UNCHECKED_CAST")
+    (kClass.companionObjectInstance as? ComponentTypeProvider<T>)?.componentType = registeredComponent
+
+    return registeredComponent
 }
 
 fun <T : ISystem<EntityStore>> registerSystem(
