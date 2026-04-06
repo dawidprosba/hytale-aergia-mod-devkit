@@ -8,6 +8,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.dawidprosba.aergiadevkit.ksp.registry.data.RegistryEntryMetadata
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.*
 import io.github.dawidprosba.aergiadevkit.ksp.registry.providers.ComponentRegistrationService
+import java.io.IOException
 
 class ComponentRegistryGenerator(
     private val outputPackage: String,
@@ -42,14 +43,19 @@ class ComponentRegistryGenerator(
         val serviceInterfaceName = ComponentRegistrationService::class.qualifiedName!!
         val serviceClassName = "$outputPackage.$objectName"
 
-        codeGenerator.createNewFile(
-            dependencies = Dependencies(true, *sourceFiles),
-            packageName = "META-INF.services",
-            fileName = serviceInterfaceName,
-            extensionName = "",
-        ).use { stream ->
-            stream.write(serviceClassName.toByteArray())
+        try {
+            codeGenerator.createNewFile(
+                dependencies = Dependencies(true, *sourceFiles),
+                packageName = "META-INF.services",
+                fileName = serviceInterfaceName,
+                extensionName = "",
+            ).use { stream ->
+                stream.write(serviceClassName.toByteArray())
+            }
+        } catch (e: FileAlreadyExistsException) {
+            // pass
         }
+
     }
 
     private fun buildRegistryClass(): TypeSpec {

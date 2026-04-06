@@ -1,6 +1,5 @@
 package io.github.dawidprosba.aergiadevkit.ksp.registry.providers
 
-import com.hypixel.hytale.codec.builder.BuilderCodec
 import com.hypixel.hytale.component.Component
 import com.hypixel.hytale.component.ComponentRegistryProxy
 import com.hypixel.hytale.component.ComponentType

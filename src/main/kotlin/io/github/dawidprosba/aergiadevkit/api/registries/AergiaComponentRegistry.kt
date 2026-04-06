@@ -29,7 +29,7 @@ class AergiaComponentRegistry {
         private val componentRegistrationService: List<ComponentRegistrationService> by lazy {
             ServiceLoader.load(ComponentRegistrationService::class.java).toList()
         }
-        
+
         /**
          * Gets component type for your mod component.
          * Component class must be annotated with `@HytaleComponent`

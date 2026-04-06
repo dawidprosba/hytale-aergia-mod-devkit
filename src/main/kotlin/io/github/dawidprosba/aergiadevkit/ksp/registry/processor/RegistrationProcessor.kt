@@ -10,7 +10,6 @@ import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.HytaleComponent
-import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterEvent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterGlobalEvent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterInteraction
@@ -28,13 +27,12 @@ class RegistrationProcessor(
     environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
     private val interactionAnnotation = RegisterInteraction::class.qualifiedName!!
-    private val componentAnnotation = RegisterComponent::class.qualifiedName!!
     private val hytaleComponentAnnotation = HytaleComponent::class.qualifiedName!!
     private val systemAnnotation = RegisterSystem::class.qualifiedName!!
     private val globalEventAnnotation = RegisterGlobalEvent::class.qualifiedName!!
     private val eventAnnotation = RegisterEvent::class.qualifiedName!!
     private val simpleAnnotations =
-        listOf(interactionAnnotation, componentAnnotation, systemAnnotation)
+        listOf(interactionAnnotation, hytaleComponentAnnotation, systemAnnotation)
 
     private val outputPackage = environment.options["registriesOutputPackage"]
         ?: throw IllegalArgumentException("Missing required option: registriesOutputPackage add it under build.gradle.kts, ksp {..here..}")
@@ -133,8 +131,8 @@ class RegistrationProcessor(
         ComponentRegistryGenerator(
             outputPackage = outputPackage,
             pluginClass = pluginClass,
-            entries = collectedEntriesByAnnotation.getValue(componentAnnotation).values.sortedBy { it.qualifiedName },
-            sourceFiles = sourceFilesByAnnotation.getValue(componentAnnotation).toTypedArray(),
+            entries = collectedEntriesByAnnotation.getValue(hytaleComponentAnnotation).values.sortedBy { it.qualifiedName },
+            sourceFiles = sourceFilesByAnnotation.getValue(hytaleComponentAnnotation).toTypedArray(),
             codeGenerator = codeGenerator,
         ).generate()
 
@@ -173,10 +171,10 @@ class RegistrationProcessor(
             val arguments = declaration.annotationArguments(annotationQualifiedName)
             val isEnabled = arguments.getOrDefault("enabled", true) as Boolean
 
-            collectedEntriesByAnnotation.getValue(componentAnnotation)[qualifiedName] =
+            collectedEntriesByAnnotation.getValue(hytaleComponentAnnotation)[qualifiedName] =
                 RegistryEntryMetadata(qualifiedName, isEnabled)
             declaration.containingFile?.let {
-                sourceFilesByAnnotation.getValue(componentAnnotation).add(it)
+                sourceFilesByAnnotation.getValue(hytaleComponentAnnotation).add(it)
             }
         }
 

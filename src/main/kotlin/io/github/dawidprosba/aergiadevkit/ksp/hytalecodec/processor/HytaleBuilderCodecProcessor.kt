@@ -28,7 +28,6 @@ class HytaleBuilderCodecProcessor(
             .filterNot { it.qualifiedName?.asString() in processedClasses }
             .forEach { classDeclaration ->
                 processClass(classDeclaration)
-                collectedClassDeclarations.add(classDeclaration)
             }
 
         resolver.findClassesWithAnnotation(hytaleComponentAnnotationName)
@@ -36,18 +35,17 @@ class HytaleBuilderCodecProcessor(
             .filter { it.findPropertiesWithAnnotation(codecPropertySimpleName).isNotEmpty() }
             .forEach { classDeclaration ->
                 processClass(classDeclaration)
-                collectedClassDeclarations.add(classDeclaration)
             }
 
         return emptyList()
     }
 
     override fun finish() {
-        val outputPackage = outputPackage ?: return
+        if(outputPackage.isNullOrEmpty()) {
+            return
+        }
 
-        val sourceFiles = collectedClassDeclarations
-            .mapNotNull { it.containingFile }
-            .toTypedArray()
+        val sourceFiles = collectedClassDeclarations.mapNotNull { it.containingFile }.toTypedArray()
 
         CodecRegistryGenerator(
             outputPackage = outputPackage,
@@ -65,12 +63,9 @@ class HytaleBuilderCodecProcessor(
             classDeclaration.findPropertiesWithAnnotation(CodecProperty::class.simpleName!!)
 
         if (properties.isEmpty()) {
-            environment.logger.warn(
-                "No @CodecProperty found in $className, CODEC won't be generated, " +
-                        "please add at least one property annotated " +
-                        "with @CodecProperty or remove @GenerateCodec annotation"
+            error(
+                "No @CodecProperty found in $className, CODEC won't be generated, " + "please add at least one property annotated " + "with @CodecProperty or remove @GenerateCodec annotation"
             )
-            return
         }
 
         CodecFileGenerator(
@@ -80,5 +75,6 @@ class HytaleBuilderCodecProcessor(
         ).generate()
 
         processedClasses.add(classDeclaration.qualifiedName!!.asString())
+        collectedClassDeclarations.add(classDeclaration)
     }
 }
