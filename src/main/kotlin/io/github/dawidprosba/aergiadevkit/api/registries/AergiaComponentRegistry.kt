@@ -20,7 +20,8 @@ class AergiaComponentRegistry {
          * that can be later used for getting that component from a holder.
          * This map holds those types after registering a component.
          */
-        private val registeredComponentsType =
+        @PublishedApi
+        internal val registeredComponentsType =
             mutableMapOf<Class<out Component<EntityStore>>, ComponentType<EntityStore, *>>()
 
         /**
@@ -31,16 +32,27 @@ class AergiaComponentRegistry {
         }
 
         /**
-         * Gets component type for your mod component.
-         * Component class must be annotated with `@HytaleComponent`
+         * Gets the [ComponentType] for your mod component.
+         * Component class must be annotated with `@HytaleComponent`.
+         * Must be called after [registerAll].
          */
-        fun <T : Component<EntityStore>> getComponentType(clazz: Class<T>): ComponentType<EntityStore, T> {
-            val foundComponentType =
-                registeredComponentsType[clazz] ?: throw IllegalArgumentException(
-                    "No component type found for class: ${clazz.name}," + " make sure your component is annotated with @HytaleComponent and registered properly using `AergiaComponentRegistry.registerAll`"
+        @Suppress("UNCHECKED_CAST")
+        inline fun <reified T : Component<EntityStore>> getComponentType(): ComponentType<EntityStore, T> {
+            return registeredComponentsType[T::class.java] as? ComponentType<EntityStore, T>
+                ?: throw IllegalArgumentException(
+                    "No component type found for class: ${T::class.java.name}, " +
+                            "make sure your component is annotated with @HytaleComponent and registered properly using `AergiaComponentRegistry.registerAll`"
                 )
-            @Suppress("UNCHECKED_CAST") return foundComponentType as ComponentType<EntityStore, T>
         }
+
+        /**
+         * Returns a lazy delegate that resolves the [ComponentType] for your mod component on first access.
+         * Component class must be annotated with `@HytaleComponent`.
+         *
+         * Usage: `val componentType by AergiaComponentRegistry.lazyGetComponentType<MyComponent>()`
+         */
+        inline fun <reified T : Component<EntityStore>> lazyGetComponentType(): Lazy<ComponentType<EntityStore, T>> =
+            lazy { getComponentType<T>() }
 
         /**
          * Registers all components with @HytaleComponent annotation.
