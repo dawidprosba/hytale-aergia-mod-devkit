@@ -25,6 +25,7 @@ dependencies {
     testCompileOnly(files(providers.gradleProperty("hytale.serverJar").get()))
     testRuntimeOnly(files(providers.gradleProperty("hytale.serverJar").get()))
     testImplementation("io.mockk:mockk:1.14.9")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.0.3")
 
 }
 
