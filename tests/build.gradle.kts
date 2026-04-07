@@ -8,6 +8,7 @@ repositories {
     mavenCentral()
 }
 
+
 ksp {
     arg("registriesOutputPackage", "test.generated")
     arg("pluginClass", "test.TestPlugin")
@@ -20,14 +21,17 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testCompileOnly(project(":"))
+    testRuntimeOnly(project(":"))
     testCompileOnly(files(providers.gradleProperty("hytale.serverJar").get()))
+    testRuntimeOnly(files(providers.gradleProperty("hytale.serverJar").get()))
+    testImplementation("io.mockk:mockk:1.14.9")
+
 }
 
 tasks.test {
     useJUnitPlatform()
     filter {
-        includeTestsMatching("test.CodecGenerationTest")
-        includeTestsMatching("test.RegistryGenerationTest")
+        includeTestsMatching("test.api.*")
     }
     systemProperty(
         "ksp.generated.sources",
