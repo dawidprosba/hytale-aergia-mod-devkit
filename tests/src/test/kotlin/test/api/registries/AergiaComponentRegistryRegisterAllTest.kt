@@ -3,10 +3,9 @@ package test.api.registries
 import com.hypixel.hytale.component.ComponentRegistryProxy
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore
 import io.github.dawidprosba.aergiadevkit.api.registries.AergiaComponentRegistry
+import io.github.dawidprosba.aergiadevkit.api.registries.services.AergiaComponentRegistrationService
 import io.mockk.mockk
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 import test.MockedComponentServiceLoader
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
@@ -24,6 +23,11 @@ class AergiaComponentRegistryRegisterAllTest {
 
     @Test
     fun `No services found, no components registered`() {
+        val field =
+        AergiaComponentRegistry::class.java.getDeclaredField("componentRegistrationService\$delegate")
+        field.isAccessible = true
+        field.set(aergiaComponentRegistry, lazy { emptyList<AergiaComponentRegistrationService>() })
+
         val registeredComponentsCount = aergiaComponentRegistry.registerAll()
 
         assertEquals(0, registeredComponentsCount)
@@ -36,6 +40,13 @@ class AergiaComponentRegistryRegisterAllTest {
         field.isAccessible = true
         field.set(aergiaComponentRegistry, lazy { listOf(MockedComponentServiceLoader()) })
 
+        val registeredComponentsCount = aergiaComponentRegistry.registerAll()
+
+        assertEquals(1, registeredComponentsCount)
+    }
+
+    @Test
+    fun `Registers components via ServiceLoader from META-INF services`() {
         val registeredComponentsCount = aergiaComponentRegistry.registerAll()
 
         assertEquals(1, registeredComponentsCount)
