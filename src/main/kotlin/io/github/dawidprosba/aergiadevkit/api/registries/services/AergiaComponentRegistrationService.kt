@@ -9,5 +9,5 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore
  * Registration service (should be generated automatically by ksp processor).
  */
 interface AergiaComponentRegistrationService {
-    fun registerAll(registry: ComponentRegistryProxy<EntityStore>): MutableMap<Class<out Component<EntityStore>>, ComponentType<EntityStore, *>>
+    fun registerAll(registry: ComponentRegistryProxy<EntityStore>): Map<Class<out Component<EntityStore>>, ComponentType<EntityStore, *>>
 }
