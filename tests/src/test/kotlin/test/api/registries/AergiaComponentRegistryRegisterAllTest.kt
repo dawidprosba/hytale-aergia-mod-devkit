@@ -5,17 +5,17 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore
 import io.github.dawidprosba.aergiadevkit.api.registries.AergiaComponentRegistry
 import io.github.dawidprosba.aergiadevkit.api.registries.services.AergiaComponentRegistrationService
 import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import test.MockedComponentServiceLoader
-import kotlin.test.BeforeTest
-import kotlin.test.assertEquals
 
 
 class AergiaComponentRegistryRegisterAllTest {
     lateinit var hytaleComponentRegistry: ComponentRegistryProxy<EntityStore>
     lateinit var aergiaComponentRegistry: AergiaComponentRegistry
 
-    @BeforeTest
+    @BeforeEach
     fun setUp() {
         hytaleComponentRegistry = mockk<ComponentRegistryProxy<EntityStore>>(relaxed = true)
         aergiaComponentRegistry = AergiaComponentRegistry(hytaleComponentRegistry)
