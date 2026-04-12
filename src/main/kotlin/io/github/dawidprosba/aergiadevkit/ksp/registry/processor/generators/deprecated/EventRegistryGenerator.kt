@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators
+package io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies

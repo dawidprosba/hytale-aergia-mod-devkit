@@ -39,3 +39,10 @@ internal val REGISTER_SYSTEM = MemberName(
     "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
     "registerSystem"
 )
+
+internal val COMPONENT_REGISTRATION_SERVICE_TYPE = ClassName(
+    "io.github.dawidprosba.aergiadevkit.ksp.registry.providers",
+    "ComponentRegistrationService"
+)
+
+internal val COMPONENT_CLASS = ClassName("com.hypixel.hytale.component", "Component")
