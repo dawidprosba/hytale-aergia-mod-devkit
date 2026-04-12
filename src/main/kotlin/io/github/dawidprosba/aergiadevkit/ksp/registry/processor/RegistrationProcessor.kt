@@ -9,6 +9,9 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
+import io.github.dawidprosba.aergiadevkit.api.registries.annotations.HytaleComponent
+import io.github.dawidprosba.aergiadevkit.ksp.generator_pipeline.GeneratorPipeline
+import io.github.dawidprosba.aergiadevkit.ksp.generator_pipeline.steps.FindSourceFilesWithAnnotationStep
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterEvent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterGlobalEvent
@@ -20,6 +23,7 @@ import io.github.dawidprosba.aergiadevkit.ksp.registry.data.RegistryEntryMetadat
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.ComponentRegistryGenerator
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.EventRegistryGenerator
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.GlobalEventRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.HytaleComponentGenerator
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.InteractionRegistryGenerator
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.SystemRegistryGenerator
 
@@ -53,6 +57,14 @@ class RegistrationProcessor(
     private val eventSourceFiles = mutableSetOf<KSFile>()
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
+        val deferredSymbols = mutableListOf<KSAnnotated>()
+        val a = HytaleComponentGenerator(resolver).process()
+
+
+        return emptyList()
+    }
+
+    fun processOld(resolver: Resolver): List<KSAnnotated> {
         val deferredSymbols = mutableListOf<KSAnnotated>()
 
         simpleAnnotations.forEach { annotationQualifiedName ->

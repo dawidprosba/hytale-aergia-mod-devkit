@@ -10,6 +10,7 @@ import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_REGIS
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.ENTITY_STORE_TYPE
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_SYSTEM
 
+@Deprecated("TODO: REMOVE")
 class SystemRegistryGenerator(
     outputPackage: String,
     pluginClass: String,

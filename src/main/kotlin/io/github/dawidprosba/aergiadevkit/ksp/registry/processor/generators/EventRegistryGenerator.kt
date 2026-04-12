@@ -9,6 +9,7 @@ import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.EVENT_REGISTRY_
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.HYTALE_LOGGER_TYPE
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_EVENT
 
+@Deprecated("TODO: REMOVE")
 class EventRegistryGenerator(
     private val outputPackage: String,
     private val pluginClass: String,
