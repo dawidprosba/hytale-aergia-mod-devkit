@@ -32,6 +32,7 @@ class BuildRegistryClass : PipelineStep<RegistryClassGenerationOptions, TypeSpec
             input.entries,
             input.elementClass,
             input.elementClassT,
+            input.mapValueClass,
             input.registryProxyType,
             input.registerHelperFunctionMemberName,
         )
@@ -46,12 +47,13 @@ class BuildRegistryClass : PipelineStep<RegistryClassGenerationOptions, TypeSpec
         entries: List<RegistryEntryMetadata>,
         elementClass: ClassName,
         elementT: ClassName,
+        mapValueClass: ClassName,
         registryProxyType: ClassName,
         registerHelperFunctionMemberName: MemberName
     ): FunSpec {
         val outComponent = WildcardTypeName.producerOf(elementClass.parameterizedBy(elementT))
         val entryClass = ClassName("java.lang", "Class").parameterizedBy(outComponent)
-        val entryClassT = elementClass.parameterizedBy(elementT, STAR)
+        val entryClassT = mapValueClass.parameterizedBy(elementT, STAR)
         val returnType = ClassName("kotlin.collections", "MutableMap").parameterizedBy(
             entryClass,
             entryClassT

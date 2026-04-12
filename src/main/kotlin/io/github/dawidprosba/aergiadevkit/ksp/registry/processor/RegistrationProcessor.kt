@@ -69,18 +69,17 @@ class RegistrationProcessor(
 
 
     override fun finish() {
-        val sourceFiles = HytaleComponentPipelineProcessor.sourceFiles
         val hytaleComponentPipelineGeneratorOptions = GeneratorOptions(
             outputPackage = outputPackage,
             pluginClass = pluginClass,
             outputClassName = "HytaleComponentRegistryGenerated",
-            entries = sourceFiles.map { RegistryEntryMetadata(it.fileName, true) },
-            sourceFiles = sourceFiles.toTypedArray()
+            entries = HytaleComponentPipelineProcessor.entries,
+            sourceFiles = HytaleComponentPipelineProcessor.sourceFiles.toTypedArray()
         )
         HytaleComponentPipelineGenerator(
             options = hytaleComponentPipelineGeneratorOptions,
             codeGenerator = codeGenerator
-        )
+        ).generate()
     }
 
     fun processOld(resolver: Resolver): List<KSAnnotated> {

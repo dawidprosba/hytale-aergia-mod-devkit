@@ -17,6 +17,7 @@ import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.data.Reg
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_CLASS
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_REGISTRATION_SERVICE_TYPE
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_REGISTRY_PROXY_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_TYPE_CLASS
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.ENTITY_STORE_TYPE
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_COMPONENT
 
@@ -45,6 +46,7 @@ class HytaleComponentPipelineGenerator(options: GeneratorOptions, codeGenerator:
             options.entries,
             COMPONENT_CLASS,
             ENTITY_STORE_TYPE,
+            COMPONENT_TYPE_CLASS,
             REGISTER_COMPONENT,
             COMPONENT_REGISTRY_PROXY_TYPE,
         )

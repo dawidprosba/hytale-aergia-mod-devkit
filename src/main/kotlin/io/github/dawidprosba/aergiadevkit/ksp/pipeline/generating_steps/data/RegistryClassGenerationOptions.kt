@@ -13,6 +13,8 @@ data class RegistryClassGenerationOptions(
     val elementClass: ClassName,
     // Eg EntityStore
     val elementClassT: ClassName,
+    // Eg ComponentType (used as the map value type, may differ from elementClass)
+    val mapValueClass: ClassName,
     val registerHelperFunctionMemberName: MemberName,
     val registryProxyType: ClassName,
 )
