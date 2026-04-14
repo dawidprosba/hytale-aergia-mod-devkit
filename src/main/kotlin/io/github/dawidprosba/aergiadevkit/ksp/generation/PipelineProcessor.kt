@@ -1,7 +1,7 @@
 package io.github.dawidprosba.aergiadevkit.ksp.generation
 
-import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSFile
 
 interface PipelineProcessor {
-    fun process() : Set<KSAnnotated>
+    fun process() : Set<KSFile>
 }

@@ -55,14 +55,15 @@ class RegistrationProcessor(
     private val collectedEventEntries = mutableMapOf<String, EventEntryMetadata>()
     private val eventSourceFiles = mutableSetOf<KSFile>()
 
-
+    private var componentProcessor: HytaleComponentPipelineProcessor? = null
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val deferredSymbols = mutableListOf<KSAnnotated>()
 
-        val componentProcessor = HytaleComponentPipelineProcessor(resolver)
-        componentProcessor.process()
-        deferredSymbols += componentProcessor.deferredSymbols
+        val processor = HytaleComponentPipelineProcessor(resolver)
+        processor.process()
+        deferredSymbols += processor.deferredSymbols
+        componentProcessor = processor
 
         return deferredSymbols
     }
@@ -73,8 +74,8 @@ class RegistrationProcessor(
             outputPackage = outputPackage,
             pluginClass = pluginClass,
             outputClassName = "HytaleComponentRegistryGenerated",
-            entries = HytaleComponentPipelineProcessor.entries,
-            sourceFiles = HytaleComponentPipelineProcessor.sourceFiles.toTypedArray()
+            entries = componentProcessor!!.entries,
+            sourceFiles = componentProcessor!!.sourceFiles.toTypedArray()
         )
         HytaleComponentPipelineGenerator(
             options = hytaleComponentPipelineGeneratorOptions,

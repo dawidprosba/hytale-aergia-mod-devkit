@@ -21,7 +21,10 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
         "com.hypixel.hytale.component.Component"
     )
 
-    override fun process(): Set<KSAnnotated> {
+    val sourceFiles: MutableSet<KSFile> = mutableSetOf()
+    val entries: MutableList<RegistryEntryMetadata> = mutableListOf()
+
+    override fun process(): Set<KSFile> {
         return pipeline
             .next { stepFindClassesWithAnnotation() }
             .next { internalStepStoreEntries(it)}
@@ -35,14 +38,12 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
         return FindClassesWithAnnotation(resolver).process(annotationKClass)
     }
 
-    private fun stepValidateAnnotationOnCorrectTarget(annotatedClasses: List<KSAnnotated>): List<KSAnnotated> {
+    private fun stepValidateAnnotationOnCorrectTarget(annotatedClasses: List<KSClassDeclaration>): List<KSAnnotated> {
         return ValidateAnnotationOnCorrectTarget(correctTargets).process(annotatedClasses)
     }
 
     private fun stepFindSourceFiles(annotatedClasses: List<KSAnnotated>): Set<KSFile> {
-        return FindSourceFilesWithAnnotationStep(
-            deferredSymbols::addAll
-        ).process(annotatedClasses)
+        return FindSourceFilesWithAnnotationStep { deferredSymbols.addAll(it) }.process(annotatedClasses)
     }
 
     private fun internalStepStoreSourceFiles(additionalSourceFiles: Set<KSFile>): Set<KSFile> {
@@ -54,7 +55,7 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
     private fun internalStepStoreEntries(declarations: List<KSClassDeclaration>): List<KSClassDeclaration> {
         declarations.filter { it.validate() }.forEach {
             val qualifiedName = it.qualifiedNameString()
-            val arguments = it.annotationArguments(qualifiedName)
+            val arguments = it.annotationArguments(annotationKClass.qualifiedName!!)
             val isEnabled = arguments.getOrDefault("enabled", true) as Boolean
 
             entries += RegistryEntryMetadata(qualifiedName, isEnabled)
@@ -62,8 +63,4 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
         return declarations
     }
 
-    companion object {
-        val sourceFiles: MutableSet<KSFile> = mutableSetOf()
-        val entries: MutableList<RegistryEntryMetadata> = mutableListOf()
-    }
 }

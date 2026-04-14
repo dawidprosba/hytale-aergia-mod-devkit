@@ -4,9 +4,9 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.PipelineStep
 
-class ValidateAnnotationOnCorrectTarget(private val allowedTargets: List<String>) : PipelineStep<List<KSAnnotated>, List<KSAnnotated>> {
+class ValidateAnnotationOnCorrectTarget(private val allowedTargets: List<String>) : PipelineStep<List<KSClassDeclaration>, List<KSAnnotated>> {
 
-    override fun process(input: List<KSAnnotated>): List<KSAnnotated> {
+    override fun process(input: List<KSClassDeclaration>): List<KSAnnotated> {
         val invalidTargets = input
             .filterIsInstance<KSClassDeclaration>()
             .filter { kClass ->
