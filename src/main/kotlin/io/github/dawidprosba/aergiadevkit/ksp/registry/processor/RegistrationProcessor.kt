@@ -74,7 +74,7 @@ class RegistrationProcessor(
             outputPackage = outputPackage,
             pluginClass = pluginClass,
             outputClassName = "HytaleComponentRegistryGenerated",
-            entries = componentProcessor!!.entries,
+            entries = HytaleComponentPipelineProcessor.entries,
             sourceFiles = componentProcessor!!.sourceFiles.toTypedArray()
         )
         HytaleComponentPipelineGenerator(

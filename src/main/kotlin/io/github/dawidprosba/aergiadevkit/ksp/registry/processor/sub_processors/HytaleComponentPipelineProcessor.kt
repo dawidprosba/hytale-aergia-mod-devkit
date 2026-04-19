@@ -22,7 +22,7 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
     )
 
     val sourceFiles: MutableSet<KSFile> = mutableSetOf()
-    val entries: MutableList<RegistryEntryMetadata> = mutableListOf()
+
 
     override fun process(): Set<KSFile> {
         return pipeline
@@ -61,6 +61,10 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
             entries += RegistryEntryMetadata(qualifiedName, isEnabled)
         }
         return declarations
+    }
+
+    companion object {
+        val entries: MutableList<RegistryEntryMetadata> = mutableListOf()
     }
 
 }

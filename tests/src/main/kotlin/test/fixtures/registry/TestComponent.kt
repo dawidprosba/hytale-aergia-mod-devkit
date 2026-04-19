@@ -9,7 +9,7 @@ class TestComponent : Component<EntityStore> {
     override fun clone(): Component<EntityStore> = TestComponent()
 }
 
-@RegisterComponent("disabled_component", enabled = true)
+@RegisterComponent("disabled_component", enabled = false)
 class DisabledComponent : Component<EntityStore> {
     override fun clone(): Component<EntityStore> = DisabledComponent()
 }
