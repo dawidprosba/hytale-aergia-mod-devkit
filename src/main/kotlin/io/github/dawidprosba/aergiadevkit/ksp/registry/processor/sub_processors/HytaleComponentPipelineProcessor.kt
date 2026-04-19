@@ -27,8 +27,8 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
     override fun process(): Set<KSFile> {
         return pipeline
             .next { stepFindClassesWithAnnotation() }
-            .next { internalStepStoreEntries(it)}
             .next { stepValidateAnnotationOnCorrectTarget(it) }
+            .next { internalStepStoreEntries(it)}
             .next { stepFindSourceFiles(it) }
             .next { internalStepStoreSourceFiles(it) }
             .result()
@@ -38,7 +38,7 @@ class HytaleComponentPipelineProcessor(resolver: Resolver) : AbstractPipelinePro
         return FindClassesWithAnnotation(resolver).process(annotationKClass)
     }
 
-    private fun stepValidateAnnotationOnCorrectTarget(annotatedClasses: List<KSClassDeclaration>): List<KSAnnotated> {
+    private fun stepValidateAnnotationOnCorrectTarget(annotatedClasses: List<KSClassDeclaration>): List<KSClassDeclaration> {
         return ValidateAnnotationOnCorrectTarget(correctTargets).process(annotatedClasses)
     }
 

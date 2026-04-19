@@ -6,7 +6,7 @@ import io.github.dawidprosba.aergiadevkit.ksp.pipeline.PipelineStep
 
 class ValidateAnnotationOnCorrectTarget(private val allowedTargets: List<String>) : PipelineStep<List<KSClassDeclaration>, List<KSAnnotated>> {
 
-    override fun process(input: List<KSClassDeclaration>): List<KSAnnotated> {
+    override fun process(input: List<KSClassDeclaration>): List<KSClassDeclaration> {
         val invalidTargets = input
             .filterIsInstance<KSClassDeclaration>()
             .filter { kClass ->
