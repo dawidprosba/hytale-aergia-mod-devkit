@@ -2,6 +2,7 @@ package test.fixtures.registry
 
 import com.hypixel.hytale.component.Component
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.CodecProperty
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 
 @RegisterComponent("test_component")
