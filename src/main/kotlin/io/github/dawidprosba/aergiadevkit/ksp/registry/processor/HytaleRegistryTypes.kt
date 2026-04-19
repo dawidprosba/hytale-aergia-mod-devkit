@@ -32,10 +32,17 @@ internal val REGISTER_INTERACTION = MemberName(
     "registerInteraction"
 )
 internal val REGISTER_COMPONENT = MemberName(
-    "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
+    "io.github.dawidprosba.aergiadevkit.api.registries",
     "registerComponent"
 )
 internal val REGISTER_SYSTEM = MemberName(
     "io.github.dawidprosba.aergiadevkit.ksp.registry.hytalehelpers",
     "registerSystem"
 )
+
+internal val COMPONENT_REGISTRATION_SERVICE_TYPE = ClassName(
+    "io.github.dawidprosba.aergiadevkit.api.registries.services",
+    "AergiaComponentRegistrationService"
+)
+internal val COMPONENT_CLASS = ClassName("com.hypixel.hytale.component", "Component")
+internal val COMPONENT_TYPE_CLASS = ClassName("com.hypixel.hytale.component", "ComponentType")

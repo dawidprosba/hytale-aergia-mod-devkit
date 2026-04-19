@@ -9,6 +9,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.validate
+import io.github.dawidprosba.aergiadevkit.ksp.generation.GeneratorOptions
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterComponent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterEvent
 import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterGlobalEvent
@@ -17,11 +18,13 @@ import io.github.dawidprosba.aergiadevkit.ksp.registry.annotations.RegisterSyste
 import io.github.dawidprosba.aergiadevkit.ksp.registry.data.EventEntryMetadata
 import io.github.dawidprosba.aergiadevkit.ksp.registry.data.GlobalEventEntryMetadata
 import io.github.dawidprosba.aergiadevkit.ksp.registry.data.RegistryEntryMetadata
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.ComponentRegistryGenerator
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.EventRegistryGenerator
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.GlobalEventRegistryGenerator
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.InteractionRegistryGenerator
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.SystemRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.HytaleComponentPipelineGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated.ComponentRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated.EventRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated.GlobalEventRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.sub_processors.HytaleComponentPipelineProcessor
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated.InteractionRegistryGenerator
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated.SystemRegistryGenerator
 
 class RegistrationProcessor(
     environment: SymbolProcessorEnvironment
@@ -52,7 +55,35 @@ class RegistrationProcessor(
     private val collectedEventEntries = mutableMapOf<String, EventEntryMetadata>()
     private val eventSourceFiles = mutableSetOf<KSFile>()
 
+    private var componentProcessor: HytaleComponentPipelineProcessor? = null
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
+        val deferredSymbols = mutableListOf<KSAnnotated>()
+
+        val processor = HytaleComponentPipelineProcessor(resolver)
+        processor.process()
+        deferredSymbols += processor.deferredSymbols
+        componentProcessor = processor
+
+        return deferredSymbols
+    }
+
+
+    override fun finish() {
+        val hytaleComponentPipelineGeneratorOptions = GeneratorOptions(
+            outputPackage = outputPackage,
+            pluginClass = pluginClass,
+            outputClassName = "HytaleComponentRegistryGenerated",
+            entries = HytaleComponentPipelineProcessor.entries,
+            sourceFiles = componentProcessor!!.sourceFiles.toTypedArray()
+        )
+        HytaleComponentPipelineGenerator(
+            options = hytaleComponentPipelineGeneratorOptions,
+            codeGenerator = codeGenerator
+        ).generate()
+    }
+
+    fun processOld(resolver: Resolver): List<KSAnnotated> {
         val deferredSymbols = mutableListOf<KSAnnotated>()
 
         simpleAnnotations.forEach { annotationQualifiedName ->
@@ -117,7 +148,9 @@ class RegistrationProcessor(
         return deferredSymbols
     }
 
-    override fun finish() {
+
+
+    fun finishOld() {
         InteractionRegistryGenerator(
             outputPackage = outputPackage,
             pluginClass = pluginClass,

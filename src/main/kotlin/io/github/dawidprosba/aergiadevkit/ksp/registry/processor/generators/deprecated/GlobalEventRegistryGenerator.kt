@@ -1,18 +1,19 @@
-package io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators
+package io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
 import com.squareup.kotlinpoet.*
-import io.github.dawidprosba.aergiadevkit.ksp.registry.data.EventEntryMetadata
+import io.github.dawidprosba.aergiadevkit.ksp.registry.data.GlobalEventEntryMetadata
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.EVENT_REGISTRY_TYPE
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.HYTALE_LOGGER_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_EVENT
+import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_GLOBAL_EVENT
 
-class EventRegistryGenerator(
+@Deprecated("TODO: REMOVE")
+class GlobalEventRegistryGenerator(
     private val outputPackage: String,
     private val pluginClass: String,
-    private val entries: List<EventEntryMetadata>,
+    private val entries: List<GlobalEventEntryMetadata>,
     private val sourceFiles: Array<KSFile>,
     private val codeGenerator: CodeGenerator,
 ) {
@@ -61,23 +62,22 @@ class EventRegistryGenerator(
         return CodeBlock.builder().apply {
             entries.forEach { entry ->
                 val eventClass = ClassName.bestGuess(entry.eventClassQualifiedName)
-                val subjectClass = ClassName.bestGuess(entry.subjectClassQualifiedName)
                 val containingClass = ClassName.bestGuess(entry.containingClassQualifiedName)
                 if (!entry.enabled) {
                     addStatement(
                         "LOGGER.atWarning().log(%S, %S)",
-                        "Skipping event '%s' (%s), reason -> disabled",
+                        "Skipping global event '%s' (%s), reason -> disabled",
                         entry.functionQualifiedName
                     )
                 } else if (entry.hasEventParam) {
                     addStatement(
-                        "%M(%T::class, %T::class.java, { event -> %T.Companion.%N(event as %L) }, registry, %S)",
-                        REGISTER_EVENT, eventClass, subjectClass, containingClass, entry.functionName, entry.eventParamTypeName, entry.functionName
+                        "%M(%T::class, { event -> %T.Companion.%N(event as %L) }, registry, %S)",
+                        REGISTER_GLOBAL_EVENT, eventClass, containingClass, entry.functionName, entry.eventParamTypeName, entry.functionName
                     )
                 } else {
                     addStatement(
-                        "%M(%T::class, %T::class.java, { %T.Companion.%N() }, registry, %S)",
-                        REGISTER_EVENT, eventClass, subjectClass, containingClass, entry.functionName, entry.functionName
+                        "%M(%T::class, { %T.Companion.%N() }, registry, %S)",
+                        REGISTER_GLOBAL_EVENT, eventClass, containingClass, entry.functionName, entry.functionName
                     )
                 }
             }
@@ -85,6 +85,6 @@ class EventRegistryGenerator(
     }
 
     private companion object {
-        const val OBJECT_NAME = "EventRegistryGenerated"
+        const val OBJECT_NAME = "GlobalEventRegistryGenerated"
     }
 }

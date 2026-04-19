@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators
+package io.github.dawidprosba.aergiadevkit.ksp.registry.processor.generators.deprecated
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSFile
@@ -11,6 +11,7 @@ import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.CODEC_MAP_REGIS
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.INTERACTION_TYPE
 import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_INTERACTION
 
+@Deprecated("TODO: REMOVE")
 class InteractionRegistryGenerator(
     outputPackage: String,
     pluginClass: String,

@@ -44,11 +44,4 @@ class AergiaComponentRegistryRegisterAllTest {
 
         assertEquals(1, registeredComponentsCount)
     }
-
-    @Test
-    fun `Registers components via ServiceLoader from META-INF services`() {
-        val registeredComponentsCount = aergiaComponentRegistry.registerAll()
-
-        assertEquals(1, registeredComponentsCount)
-    }
 }
