@@ -7,9 +7,9 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STAR
 import com.squareup.kotlinpoet.TypeName
 import io.github.dawidprosba.aergiadevkit.ksp.registry.data.RegistryEntryMetadata
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.CODEC_MAP_REGISTRY_ASSETS_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.INTERACTION_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_INTERACTION
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.CODEC_MAP_REGISTRY_ASSETS_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.INTERACTION_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.REGISTER_INTERACTION
 
 @Deprecated("TODO: REMOVE")
 class InteractionRegistryGenerator(

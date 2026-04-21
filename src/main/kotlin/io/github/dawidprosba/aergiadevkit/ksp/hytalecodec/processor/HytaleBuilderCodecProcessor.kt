@@ -16,7 +16,6 @@ class HytaleBuilderCodecProcessor(
     private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
     private val processedClasses = mutableSetOf<String>()
-    private val generateCodecAnnotationName = GenerateCodec::class.qualifiedName!!
 
     private var codecPipelineProcessor : HytaleBuilderCodecPipelineProcessor? = null
 
@@ -31,14 +30,8 @@ class HytaleBuilderCodecProcessor(
         return deferredSymbols
     }
 
-    fun processOld(resolver: Resolver): List<KSAnnotated> {
-        resolver.findClassesWithAnnotation(generateCodecAnnotationName)
-            .filterNot { it.qualifiedName?.asString() in processedClasses }
-            .forEach { classDeclaration ->
-                processClass(classDeclaration)
-            }
+    override  fun finish() {
 
-        return emptyList()
     }
 
     private fun processClass(classDeclaration: KSClassDeclaration) {

@@ -14,15 +14,15 @@ import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.data.Cre
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.data.CreateMetaInfOptions
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.data.FileSpecOptions
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.data.RegistryClassGenerationOptions
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_CLASS
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_REGISTRATION_SERVICE_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_REGISTRY_PROXY_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.COMPONENT_TYPE_CLASS
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.ENTITY_STORE_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_COMPONENT
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.COMPONENT_CLASS
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.COMPONENT_REGISTRATION_SERVICE_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.COMPONENT_REGISTRY_PROXY_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.COMPONENT_TYPE_CLASS
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.ENTITY_STORE_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.REGISTER_COMPONENT
 
 class HytaleComponentPipelineGenerator(options: GeneratorOptions, codeGenerator: CodeGenerator) :
-    AbstractPipelineGenerator(
+    AbstractPipelineGenerator<GeneratorOptions>(
         options, codeGenerator
     ) {
     override fun generate() {

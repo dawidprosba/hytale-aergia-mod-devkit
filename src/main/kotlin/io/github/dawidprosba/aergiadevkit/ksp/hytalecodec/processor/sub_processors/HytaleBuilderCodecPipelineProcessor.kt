@@ -7,9 +7,11 @@ import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.validate
 import io.github.dawidprosba.aergiadevkit.api.registries.annotations.HytaleComponent
 import io.github.dawidprosba.aergiadevkit.ksp.extensions.findClassesWithAnnotation
+import io.github.dawidprosba.aergiadevkit.ksp.extensions.findPropertiesWithAnnotation
 import io.github.dawidprosba.aergiadevkit.ksp.generation.AbstractPipelineProcessor
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.CodecProperty
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.GenerateCodec
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.data.CodecGeneratorEntryMetadata
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.processing_steps.FindClassesWithAnnotation
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.processing_steps.FindClassesWithAnnotationHasPropertyAnnotated
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.processing_steps.FindSourceFilesWithAnnotationStep
@@ -71,8 +73,9 @@ class HytaleBuilderCodecPipelineProcessor(resolver: Resolver) :
             val qualifiedName = it.qualifiedNameString()
             val arguments = it.annotationArguments(annotationKClass.qualifiedName!!)
             val isEnabled = arguments.getOrDefault("enabled", true) as Boolean
+            val propertiesMarkedWithCodec = it.findPropertiesWithAnnotation(CodecProperty::class.simpleName!!)
 
-            entries += RegistryEntryMetadata(qualifiedName, isEnabled)
+            entries += CodecGeneratorEntryMetadata(qualifiedName, isEnabled, it, propertiesMarkedWithCodec)
         }
         return declarations
     }
@@ -90,7 +93,7 @@ class HytaleBuilderCodecPipelineProcessor(resolver: Resolver) :
     }
 
     companion object {
-        val entries: MutableList<RegistryEntryMetadata> = mutableListOf()
+        val entries: MutableList<CodecGeneratorEntryMetadata> = mutableListOf()
     }
 
 }

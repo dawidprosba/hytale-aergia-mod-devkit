@@ -5,9 +5,9 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
 import com.squareup.kotlinpoet.*
 import io.github.dawidprosba.aergiadevkit.ksp.registry.data.EventEntryMetadata
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.EVENT_REGISTRY_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.HYTALE_LOGGER_TYPE
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.REGISTER_EVENT
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.EVENT_REGISTRY_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.HYTALE_LOGGER_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.REGISTER_EVENT
 
 @Deprecated("TODO: REMOVE")
 class EventRegistryGenerator(

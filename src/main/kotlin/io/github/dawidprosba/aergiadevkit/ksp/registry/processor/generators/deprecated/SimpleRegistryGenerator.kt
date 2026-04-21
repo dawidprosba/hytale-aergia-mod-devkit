@@ -5,7 +5,7 @@ import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.symbol.KSFile
 import com.squareup.kotlinpoet.*
 import io.github.dawidprosba.aergiadevkit.ksp.registry.data.RegistryEntryMetadata
-import io.github.dawidprosba.aergiadevkit.ksp.registry.processor.HYTALE_LOGGER_TYPE
+import io.github.dawidprosba.aergiadevkit.ksp.hytale.HYTALE_LOGGER_TYPE
 
 @Deprecated("TODO: REMOVE")
 abstract class SimpleRegistryGenerator(

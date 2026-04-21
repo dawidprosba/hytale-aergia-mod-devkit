@@ -1,4 +1,4 @@
-package io.github.dawidprosba.aergiadevkit.ksp.registry.processor
+package io.github.dawidprosba.aergiadevkit.ksp.hytale
 
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.MemberName
