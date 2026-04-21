@@ -2,19 +2,19 @@ package io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.processor.generators
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.CodeBlock
-import io.github.dawidprosba.aergiadevkit.ksp.extensions.getAnnotation
-import io.github.dawidprosba.aergiadevkit.ksp.extensions.getArgs
-import io.github.dawidprosba.aergiadevkit.ksp.extensions.hasAnyCompanionProperty
-import io.github.dawidprosba.aergiadevkit.ksp.extensions.isInheritedProperty
 import io.github.dawidprosba.aergiadevkit.ksp.generation.AbstractPipelineGenerator
-import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.CodecProperty
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.validators.CodecProjectileValidator
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.annotations.validators.CodecRequiredValidator
 import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.data.CodecGeneratorEntryMetadata
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.validators.CODEC_PROJECTILE_VALIDATOR_TEMPLATE
+import io.github.dawidprosba.aergiadevkit.ksp.hytalecodec.validators.CODEC_REQUIRED_VALIDATOR_TEMPLATE
+import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.codec_specific.AddCodecDocumentation
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.codec_specific.BeginPropertyCodecChain
-import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.codec_specific.ResolveCodecSchemaType
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.codec_specific.StepAddBuilderInitializer
 import io.github.dawidprosba.aergiadevkit.ksp.pipeline.generating_steps.data.PropertyCodecMetadata
+import kotlin.reflect.KClass
+
 
 /**
  * Generates BuilderCodec File for each entry.
@@ -23,6 +23,13 @@ class BuilderCodecPipelineGenerator(options: Options, codeGenerator: CodeGenerat
     AbstractPipelineGenerator<BuilderCodecPipelineGenerator.Options>(
         options, codeGenerator
     ) {
+
+    companion object {
+        private val supportedValidators: Map<KClass<*>, String> = mapOf(
+            CodecRequiredValidator::class to CODEC_REQUIRED_VALIDATOR_TEMPLATE,
+            CodecProjectileValidator::class to CODEC_PROJECTILE_VALIDATOR_TEMPLATE
+        )
+    }
 
     data class Options(
         val entries: List<CodecGeneratorEntryMetadata>,
@@ -53,17 +60,37 @@ class BuilderCodecPipelineGenerator(options: Options, codeGenerator: CodeGenerat
         builder: CodeBlock.Builder
     ): CodeBlock.Builder {
         entryMetadata.propertiesMarkedWithCodec.forEach {
-            val propertyCodecMetadata = getPropertyCodecMetadata(
+            val propertyCodecMetadata = PropertyCodecMetadata.from(
                 propertyDeclaration = it,
                 classDeclaration = entryMetadata.ksClassDeclaration,
                 expectedCodecProperty = options.codecPropertyName
             )
             pipeline.next {
                 stepBeginPropertyCodecChain(builder, propertyCodecMetadata)
-
+                stepAddDocumentation(builder, propertyCodecMetadata)
+                internalStepAddValidators(builder, propertyCodecMetadata)
             }
 
         }
+        return builder
+    }
+
+    private fun internalStepAddValidators(
+        builder: CodeBlock.Builder,
+        entryMetadata: PropertyCodecMetadata
+    ): CodeBlock.Builder {
+        supportedValidators.forEach { (validatorClass, template) ->
+            supportedValidators.forEach { (validatorClass, template) ->
+                val annotation = entryMetadata.propertyDeclaration.annotations.find { annotation ->
+                    annotation.shortName.asString() == validatorClass.simpleName
+                }
+                if (annotation == null) {
+                    return@forEach
+                }
+                builder.add(".addValidator(%L)\n", template)
+            }
+        }
+
         return builder
     }
 
@@ -78,43 +105,14 @@ class BuilderCodecPipelineGenerator(options: Options, codeGenerator: CodeGenerat
         )
     }
 
-
-
-    private fun getPropertyCodecMetadata(
-        propertyDeclaration: KSPropertyDeclaration,
-        classDeclaration: KSClassDeclaration,
-        expectedCodecProperty: String
-    ): PropertyCodecMetadata {
-        val annotation =
-            propertyDeclaration.getAnnotation(CodecProperty::class.simpleName!!)
-        val annotationArgs = annotation?.getArgs() ?: emptyMap()
-        val propertyName = propertyDeclaration.simpleName.asString()
-        val propertyType = propertyDeclaration.type.resolve()
-        val propertyQualifiedName = propertyType.declaration.qualifiedName?.asString()
-        val hasCodecProperty =
-            (propertyDeclaration.type.resolve().declaration as? KSClassDeclaration)
-                ?.hasAnyCompanionProperty(expectedCodecProperty)
-                ?: false
-        val treatAsInherited =
-            propertyDeclaration.isInheritedProperty(classDeclaration) || hasCodecProperty
-        val isRequired = annotationArgs.getOrDefault("isRequired", true) as Boolean
-        val codecSchemaType = ResolveCodecSchemaType().process(
-            ResolveCodecSchemaType.Input(
-                propertyQualifiedName = propertyQualifiedName ?: "",
-                propertyType = propertyType
-            )
-        )
-        val codecKey = propertyName.replaceFirstChar { it.uppercase() }
-
-        return PropertyCodecMetadata(
-            annotation = annotation!!,
-            annotationArgs = annotationArgs,
-            propertyName = propertyName,
-            propertyQualifiedName = propertyQualifiedName,
-            treatAsInherited = treatAsInherited,
-            isRequired = isRequired,
-            codecSchemaType = codecSchemaType,
-            codecKey = codecKey
-        )
+    private fun stepAddDocumentation(
+        builder: CodeBlock.Builder,
+        propertyCodecMetadata: PropertyCodecMetadata
+    ): CodeBlock.Builder {
+        return AddCodecDocumentation(
+            builder = builder
+        ).process(propertyCodecMetadata)
     }
+
+
 }
